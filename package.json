@@ -73,5 +73,9 @@
   "devDependencies": {
     "@capacitor/cli": "3.5.0"
   },
-  "description": "An Ionic project"
+  "description": "An Ionic project",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felipecarrillo100/symbiosis"
+  }
 }

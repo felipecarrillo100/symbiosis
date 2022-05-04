@@ -30,7 +30,7 @@ const ConnectBingMapsPage: React.FC = () => {
     const history = useHistory();
 
     const [inputs, setInputs] = useState({
-        token: "AugjqbGwtwHP0n0fUtpZqptdgkixBt5NXpfSzxb7q-6ATmbk-Vs4QnqiW6fhaV-i",
+        token: "",
         label: "Satellite",
         layer: BingMapsImagerySet.AERIAL as BingMapsImagerySet,
     });
