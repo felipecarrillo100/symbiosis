@@ -1,0 +1,14 @@
+.MapContainer {
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  background-color: #000000;
+}
+
+.MapContainer.hide-map {
+  /* display: none; */
+  left: -7000px;
+}

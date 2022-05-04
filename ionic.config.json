@@ -1,0 +1,7 @@
+{
+  "name": "symbiosis",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
