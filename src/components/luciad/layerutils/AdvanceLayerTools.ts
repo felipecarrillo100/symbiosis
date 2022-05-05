@@ -8,6 +8,34 @@ import {createBounds} from "@luciad/ria/shape/ShapeFactory";
 
 class AdvanceLayerTools {
 
+    public static layerIDExistsInMap(map: Map, layerID: string) {
+        if (map) {
+            let node = map.layerTree.findLayerById(layerID) as LayerTreeNode;
+            if (typeof node === "undefined") {
+                node = map.layerTree.findLayerGroupById(layerID) as LayerTreeNode;
+            }
+            if (node) {
+                return true
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public static getLayerTreeNodeByID(map: Map, layerID: string): LayerTreeNode | null {
+        if (map) {
+            let node = map.layerTree.findLayerById(layerID) as LayerTreeNode;
+            if (typeof node === "undefined") {
+                node = map.layerTree.findLayerGroupById(layerID) as LayerTreeNode;
+            }
+            return node;
+        } else {
+            return null;
+        }
+    }
+
     public static fitToLayer(map: Map, node: LayerTreeNode) {
         AdvanceLayerTools.getFitBounds(map, node, (fitBounds) => {
             if (fitBounds) {
@@ -104,6 +132,25 @@ class AdvanceLayerTools {
                 }
             }
         }
+    }
+
+    static isEditable(layerInput: LayerTreeNode) {
+        let editable = false;
+        const layer = layerInput as any;
+        if (layer && typeof layer.editable !== "undefined" && layer.editable) {
+            if (this.canEdit(layer)) {
+                editable = true
+            }
+        }
+        return editable;
+    }
+
+    static canEdit(layer: any) {
+        let editable = false;
+        if (layer.model.put || layer.model.remove) {
+            editable = true
+        }
+        return editable;
     }
 }
 

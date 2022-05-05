@@ -35,9 +35,11 @@ import {Layer} from "@luciad/ria/view/Layer";
 import {CreateCommand} from "../../commands/CreateCommand";
 import {ApplicationCommands} from "../../commands/ApplicationCommands";
 import {SetAppCommand} from "../../reduxboilerplate/command/actions";
+import {MapHandler} from "../../components/luciad/layertreetools/MapHandler";
 
 interface StateProps {
     treeNode: TreeNodeInterface | null;
+    currentLayerId: string | null;
     map: Map | null;
 }
 
@@ -47,21 +49,22 @@ const LayerControlPage: React.FC = () => {
     const dispatch = useDispatch();
 
     const [canMove, setCanMove] = useState(false);
+    const [inputs, setInputs] = useState({
+        label: "",
+    });
     const [settings, setSettings] = useState({
         open: false,
         target: null as TreeNodeInterface | null,
         realNode: null as Layer | null
     })
 
-    const { treeNode, map } = useSelector<IAppState, StateProps>((state: IAppState) => {
+
+    const { treeNode, map , currentLayerId} = useSelector<IAppState, StateProps>((state: IAppState) => {
         return {
             treeNode: state.luciadMap.treeNode,
-            map: state.luciadMap.map
+            map: state.luciadMap.map,
+            currentLayerId: state.luciadMap.currentLayerId
         }
-    });
-
-    const [inputs, setInputs] = useState({
-        label: "TMS Layer",
     });
 
     const editInput = (event: any) => {
@@ -113,6 +116,15 @@ const LayerControlPage: React.FC = () => {
         }
     }
 
+    const setAsCurrentLayer = (nodeElement: TreeNodeInterface) => (event: any) => {
+        if (nodeElement && nodeElement.id && map) {
+            const mapHandler = (map as any).mapHandler as MapHandler;
+            if (mapHandler) {
+               mapHandler.setCurrentLayer(nodeElement.id);
+            }
+        }
+    }
+
     const deleteNode = (nodeElement: TreeNodeInterface) => (event: any) => {
         if (nodeElement && nodeElement.id && map) {
             const node = map.layerTree.findLayerById(nodeElement.id);
@@ -126,6 +138,7 @@ const LayerControlPage: React.FC = () => {
         if (nodeElement && nodeElement.id && map) {
             const node = map.layerTree.findLayerById(nodeElement.id);
             if (node) {
+                setInputs({label: node.label})
                 setSettings({
                     open: true,
                     target: nodeElement,
@@ -190,6 +203,7 @@ const LayerControlPage: React.FC = () => {
         )
     }
 
+
     const layers = treeNode ? treeNode.nodes.map((node) => {
         let info = "";
         let icon = "/assets/avatars/satellite.jpg";
@@ -199,18 +213,19 @@ const LayerControlPage: React.FC = () => {
         } else {
             info = "Raster"
         }
-        return (
-        <IonItemSliding key={node.id}>
+            const isSelected = node.id ===currentLayerId;
+            return (
+        <IonItemSliding key={node.id} >
             <IonItemOptions side="start">
                 <IonItemOption onClick={changeSettings(node)}>
                     <IonIcon slot="start" ios={settingsOutline} md={settingsSharp} />
                 </IonItemOption>
             </IonItemOptions>
-                <IonItem >
+                <IonItem color={isSelected ? "medium": undefined}>
                     <IonAvatar slot="start" onClick={fitToBounds(node)} >
                         <img src={icon} style={{borderRadius:0}} alt="LayerType"/>
                     </IonAvatar>
-                    <IonLabel>
+                    <IonLabel onClick={setAsCurrentLayer(node)}>
                         <h2>{node.label}</h2>
                         <h3>{info}</h3>
                         <p>Unknown source</p>
@@ -240,6 +255,7 @@ const LayerControlPage: React.FC = () => {
                 <IonLabel>
                 </IonLabel>
             </IonItem></IonList>;
+
     return (
         <IonPage>
             <IonHeader>

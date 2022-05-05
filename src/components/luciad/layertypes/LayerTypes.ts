@@ -12,4 +12,5 @@ export enum LayerTypes {
     GridLayer = "GridLayer",
     EditableFeatureLayer = "EditableFeatureLayer",
     Root = "root",
+    FeaturesFileLayer = "FeaturesFileLayer",
 }

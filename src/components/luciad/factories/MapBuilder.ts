@@ -45,6 +45,9 @@ class MapBuilder {
                 case LayerTypes.WFSLayer:
                     layerPromise = MapBuilder.buildWFSLayer(command);
                     break;
+                case LayerTypes.FeaturesFileLayer:
+                    layerPromise = MapBuilder.buildFeaturesFileLayer(command);
+                    break;
                 case LayerTypes.WMSLayer:
                     layerPromise = MapBuilder.buildWMSLayer(command);
                     break;
@@ -101,13 +104,25 @@ class MapBuilder {
         })
     }
 
-
     static buildWFSLayer(command: LayerConnectCommandsTypes) {
         return new Promise<FeatureLayer>((resolve => {
             const modelPromise = command.parameters.reusableModel ? PromiseToModel<FeatureModel>(command.parameters.reusableModel) : ModelFactory.createWFSModel(command.parameters.model);
             modelPromise.then((model)=> {
                 delete command.parameters.reusableModel;
                 const layerPromise = LayerFactory.createWFSLayer(model, command.parameters.layer);
+                layerPromise.then(layer=>{
+                    resolve(layer);
+                })
+            })
+        }));
+    }
+
+    static buildFeaturesFileLayer(command: LayerConnectCommandsTypes) {
+        return new Promise<FeatureLayer>((resolve => {
+            const modelPromise = command.parameters.reusableModel ? PromiseToModel<FeatureModel>(command.parameters.reusableModel) : ModelFactory.createFeaturesFileModel(command.parameters.model);
+            modelPromise.then((model)=> {
+                delete command.parameters.reusableModel;
+                const layerPromise = LayerFactory.createFeaturesFileLayer(model, command.parameters.layer);
                 layerPromise.then(layer=>{
                     resolve(layer);
                 })

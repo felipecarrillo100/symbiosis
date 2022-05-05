@@ -16,7 +16,12 @@ import '../Page.scss';
 import './LuciadMapPage.scss';
 import {useDispatch, useSelector} from "react-redux";
 import {IAppState} from "../../reduxboilerplate/store";
-import {SetLuciadMap, SetLuciadMapProj, SetLuciadMapTreeNode} from "../../reduxboilerplate/luciadmap/actions";
+import {
+    SetLuciadMap,
+    SetLuciadMapCurrentlayer,
+    SetLuciadMapProj,
+    SetLuciadMapTreeNode
+} from "../../reduxboilerplate/luciadmap/actions";
 import TreeNodeInterface from "../../interfaces/TreeNodeInterface";
 import {ApplicationCommandsTypes} from "../../commands/ApplicationCommandsTypes";
 import {LayerConnectCommandsTypes} from "../../commands/ConnectCommands";
@@ -26,33 +31,37 @@ import {ApplicationCommands} from "../../commands/ApplicationCommands";
 import {FileUtils} from "../../utils/FileUtils";
 import {useEffect, useState} from "react";
 import {
-    addOutline, analyticsOutline,
-    arrowBackCircle,
-    arrowForwardCircle,
-    logoFacebook,
-    logoInstagram,
-    logoTwitter,
-    logoVimeo, pinOutline, scanOutline,
-    settings,
-    share, squareOutline, starOutline
+    addOutline,
+    ellipsisVerticalCircleOutline, locateOutline,
+    resizeOutline, scanOutline,
 } from "ionicons/icons";
+import RulerController from "../../components/luciad/controllers/measurement/ruler2d/RulerController";
+import RectangleSelectController from "../../components/luciad/controllers/RectangleSelectController";
+import {MapNavigatorFitOptions} from "@luciad/ria/view/MapNavigator";
+import {createBounds} from "@luciad/ria/shape/ShapeFactory";
+import {getReference} from "@luciad/ria/reference/ReferenceProvider";
+import {EditTools} from "./toolbars/EditTools";
+import {ControllerToolSelector} from "./toolbars/ControllerToolSelector";
+import {LocationFabButton} from "./toolbars/LocationFabButton";
 
 const defaultFilename = "noname.wsp";
 interface StateProps {
     proj: string;
     command: ApplicationCommandsTypes | null;
+    map: Map | null;
 }
 
 const LuciadMapPage: React.FC = () => {
-    const pageTitle = "Map";
+
     const [workspaceName, setWorkspaceName ] = useState(defaultFilename);
 
     const dispatch = useDispatch();
 
-    const { proj, command} = useSelector<IAppState, StateProps>((state: IAppState) => {
+    const { proj, command, map} = useSelector<IAppState, StateProps>((state: IAppState) => {
         return {
             proj: state.luciadMap.proj,
             command: state.appCommand.command,
+            map: state.luciadMap.map,
         }
     });
 
@@ -92,13 +101,16 @@ const LuciadMapPage: React.FC = () => {
         }
     }, [command] );
 
-
     const storeMapToRedux = (map: Map | null) => {
         dispatch(SetLuciadMap(map));
     }
 
     const storeTreeNodeToRedux = (node: TreeNodeInterface | null) => {
         dispatch(SetLuciadMapTreeNode(node));
+    }
+
+    const storeCurrentLayerToRedux = (layerId: string | null) => {
+        dispatch(SetLuciadMapCurrentlayer(layerId));
     }
 
     const onSaveMap = (mapStatus: { mapState: any; proj: string; layerCommand: LayerConnectCommandsTypes } | null) => {
@@ -119,6 +131,9 @@ const LuciadMapPage: React.FC = () => {
         dispatch(SetAppCommand(command));
     }
 
+    const pageTitle = "Map" + " (" + workspaceName + ")";
+
+
     return (
         <IonPage>
             <IonHeader>
@@ -132,23 +147,23 @@ const LuciadMapPage: React.FC = () => {
 
             <IonContent fullscreen style={{position: "relative"}}>
                 <div className={"MapContainer " }>
-                    <LuciadMap proj={proj} onMapChange={storeMapToRedux} onLayersChange={storeTreeNodeToRedux} command={command} onSaveMap={onSaveMap}/>
+                    <LuciadMap proj={proj} onMapChange={storeMapToRedux} command={command}  onLayersChange={storeTreeNodeToRedux} onCurrentLayersChange={storeCurrentLayerToRedux} onSaveMap={onSaveMap}/>
                 </div>
 
-                <IonFab vertical="bottom" horizontal="end"  slot="fixed">
-                    <IonFabButton>
-                        <IonIcon icon={arrowBackCircle} />
+                <IonFab vertical="top" horizontal="end" slot="fixed" >
+                    <IonFabButton color="light">
+                        <IonIcon icon={ellipsisVerticalCircleOutline} />
                     </IonFabButton>
-                    <IonFabList side="top">
-                        <IonFabButton><IonIcon icon={addOutline} /></IonFabButton>
-                        <IonFabButton><IonIcon icon={scanOutline} /></IonFabButton>
+                    <IonFabList side="bottom">
+                        <ControllerToolSelector map={map} />
                     </IonFabList>
                     <IonFabList side="start">
-                        <IonFabButton><IonIcon icon={pinOutline} /></IonFabButton>
-                        <IonFabButton><IonIcon icon={analyticsOutline} /></IonFabButton>
-                        <IonFabButton><IonIcon icon={starOutline} /></IonFabButton>
-                        <IonFabButton><IonIcon icon={squareOutline} /></IonFabButton>
+                        <EditTools />
                     </IonFabList>
+                </IonFab>
+
+                <IonFab vertical="bottom" horizontal="end" slot="fixed" >
+                    <LocationFabButton map={map}/>
                 </IonFab>
             </IonContent>
         </IonPage>

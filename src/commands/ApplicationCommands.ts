@@ -8,5 +8,6 @@ export enum ApplicationCommands {
     APPTOAST = "APPTOAST",
     WORKSPACENEW = "WORKSPACENEW",
     MAPRESET = "MAPRESET",
+    APPALERT = "",
 }
 

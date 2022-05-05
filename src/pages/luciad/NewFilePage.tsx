@@ -14,6 +14,7 @@ import {ApplicationCommands} from "../../commands/ApplicationCommands";
 import {useDispatch} from "react-redux";
 import {SetAppCommand} from "../../reduxboilerplate/command/actions";
 import {useHistory} from "react-router";
+import {ScreenAlert} from "../../screen/ScreenAlert";
 
 const NewFilePage: React.FC = () => {
     const dispatch = useDispatch();
@@ -24,11 +25,23 @@ const NewFilePage: React.FC = () => {
     const onSubmit = (event: any) => {
         event.preventDefault();
         event.stopPropagation();
-        const command = CreateCommand({
-            action: ApplicationCommands.WORKSPACENEW,
+
+        const onOK = (d: any) =>  {
+            const command = CreateCommand({
+                action: ApplicationCommands.WORKSPACENEW,
+            });
+            dispatch(SetAppCommand(command));
+            history.push('/page/Map');
+        }
+
+        ScreenAlert.alert({
+            header: "Create workspace",
+            message: "All unsaved changes will be lost. Are you sure?",
+            buttons:  [
+                { text: 'Cancel', handler: () => {} },
+                { text: 'Yes', handler: onOK },
+            ]
         });
-        dispatch(SetAppCommand(command));
-        history.push('/page/Map');
     }
 
     return (

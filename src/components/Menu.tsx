@@ -16,12 +16,14 @@ import {
 
 import {useLocation} from 'react-router-dom';
 import {
+    analyticsOutline, analyticsSharp,
+    cubeOutline, cubeSharp,
     documentOutline, documentSharp,
     fileTrayOutline, fileTraySharp,
     gitNetworkOutline,
     gitNetworkSharp,
     globeOutline,
-    globeSharp, layersOutline, layersSharp,
+    globeSharp, imageOutline, imageSharp, layersOutline, layersSharp,
     mapOutline,
     mapSharp, openOutline, openSharp, saveOutline, saveSharp,
 } from 'ionicons/icons';
@@ -89,45 +91,51 @@ const ConnectSubmenu: AppSubMenu = {
         {
             title: 'WMS',
             url: '/page/connect/WMS',
-            iosIcon: gitNetworkOutline,
-            mdIcon: gitNetworkSharp
+            iosIcon: imageOutline,
+            mdIcon: imageSharp
         },
         {
             title: 'WMTS',
             url: '/page/connect/WMTS',
-            iosIcon: gitNetworkOutline,
-            mdIcon: gitNetworkSharp
+            iosIcon: imageOutline,
+            mdIcon: imageSharp
         },
         {
             title: 'LTS',
             url: '/page/connect/LTS',
-            iosIcon: gitNetworkOutline,
-            mdIcon: gitNetworkSharp
+            iosIcon: imageOutline,
+            mdIcon: imageSharp
         },
         {
             title: 'WFS',
             url: '/page/connect/WFS',
-            iosIcon: gitNetworkOutline,
-            mdIcon: gitNetworkSharp
+            iosIcon: analyticsOutline,
+            mdIcon: analyticsSharp
         },
         {
             title: 'TMS',
             url: '/page/connect/TMS',
-            iosIcon: gitNetworkOutline,
-            mdIcon: gitNetworkSharp
+            iosIcon: imageOutline,
+            mdIcon: imageSharp
         },
         {
             title: 'Bingmaps',
             url: '/page/connect/Bingmaps',
-            iosIcon: gitNetworkOutline,
-            mdIcon: gitNetworkSharp
+            iosIcon: imageOutline,
+            mdIcon: imageSharp
         },
         {
             title: 'OGC 3D Tiles',
             url: '/page/connect/OGC3DTiles',
-            iosIcon: gitNetworkOutline,
-            mdIcon: gitNetworkSharp
-        }
+            iosIcon: cubeOutline,
+            mdIcon: cubeSharp
+        },
+        {
+            title: 'JSON File',
+            url: '/page/connect/FileJson',
+            iosIcon: analyticsOutline,
+            mdIcon: analyticsSharp
+        },
     ]
 }
 

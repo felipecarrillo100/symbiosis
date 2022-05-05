@@ -234,14 +234,14 @@ function flattenWMSLayers (layers: WMSCapabilitiesLayer[]): WMSCapabilitiesLayer
 }
 
 function GetMap(operations: WMSCapabilitiesOperation[]) {
-   const getMap = operations.find(operation => operation.name === "GetMap");
-   if  (getMap) {
-       return {
-           supportedFormats: getMap.supportedFormats,
-           supportedRequests: (getMap as any).supportedRequests,
-       }
-   };
-   return null;
+    const getMap = operations.find(operation => operation.name === "GetMap");
+    if  (getMap) {
+        return {
+            supportedFormats: getMap.supportedFormats,
+            supportedRequests: (getMap as any).supportedRequests,
+        }
+    };
+    return null;
 }
 
 function GetFeatureInfo(operations: WMSCapabilitiesOperation[]) {

@@ -64,6 +64,27 @@ export  interface CreatLayerGroupCommand extends CreateLayerBaseCommand {
 }
 
 
+export  interface CreatLayerFeaturesFileCommand extends CreateLayerBaseCommand {
+    action: ApplicationCommands.CREATELAYER;
+    parameters: {
+        layerType: LayerTypes.FeaturesFileLayer;
+        reusableModel?: Model;
+        model: {
+            filename: string;
+            filePath: string;
+            autoSave?: boolean;
+            create?: boolean;
+        };
+        layer: {
+            visible?: boolean;
+            label?: string;
+            id?: string;
+            selectable?: boolean;
+        },
+        autoZoom?: boolean
+    }
+}
+
 export  interface CreatLayerWFSCommand extends CreateLayerBaseCommand {
     action: ApplicationCommands.CREATELAYER;
     parameters: {
@@ -220,4 +241,5 @@ export interface CreatLayerBingMapsCommand  extends CreateLayerBaseCommand  {
     }
 }
 
-export type LayerConnectCommandsTypes = CreatLayerWFSCommand | CreatLayerWMSCommand | CreatLayerTMSCommand | CreatRootLayerCommand | CreatLayerGroupCommand | CreatLayerBingMapsCommand | CreatLayerWMTSCommand | CreatLayerLTSCommand | CreatLayerOGC3DTilesCommand
+export type LayerConnectCommandsTypes = CreatLayerWFSCommand | CreatLayerWMSCommand | CreatLayerTMSCommand | CreatRootLayerCommand | CreatLayerGroupCommand |
+    CreatLayerBingMapsCommand | CreatLayerWMTSCommand | CreatLayerLTSCommand | CreatLayerOGC3DTilesCommand | CreatLayerFeaturesFileCommand

@@ -1,6 +1,6 @@
 import {
     IonButton,
-    IonButtons,
+    IonButtons, IonCheckbox,
     IonContent,
     IonHeader,
     IonInput,
@@ -24,40 +24,25 @@ import {SetAppCommand} from "../../../reduxboilerplate/command/actions";
 import {useHistory} from "react-router";
 import {BingMapsImagerySet} from "../../../commands/ConnectCommands";
 
-
-const ConnectBingMapsPage: React.FC = () => {
+const ConnectLocalFilePage: React.FC = () => {
     const dispatch = useDispatch();
     const history = useHistory();
 
     const [inputs, setInputs] = useState({
-        token: "",
-        label: "Satellite",
-        layer: BingMapsImagerySet.AERIAL as BingMapsImagerySet,
+        filename: "noname.json",
+        filePath: "Documents",
+        autoSave: false
     });
 
-    const [bingmapSet] = useState([
-        {
-            value: BingMapsImagerySet.AERIAL,
-            title: "BingMaps Satellite"
-        }, {
-            value: BingMapsImagerySet.HYBRID,
-            title: "BingMaps Hybrid"
-        }, {
-            value: BingMapsImagerySet.ROAD,
-            title: "BingMaps Streets"
-        }]);
-
-    const pageTitle = "Connect to Bingmaps";
+    const pageTitle = "Connect to Local File";
 
     const editInput = (event: any) => {
         const {name, value} = event.target;
+        const realValue = (typeof event.detail.checked !== "undefined") ? event.detail.checked : value;
+
         const newInputs = {...inputs};
         // @ts-ignore
-        newInputs[name] = value;
-        if (name==="layer") {
-            const dataSet = bingmapSet.find(e=>e.value===value);
-            if (dataSet) newInputs.label = dataSet.title
-        }
+        newInputs[name] = realValue;
         setInputs(newInputs);
     }
 
@@ -69,13 +54,15 @@ const ConnectBingMapsPage: React.FC = () => {
         const command = CreateCommand({
             action: ApplicationCommands.CREATELAYER,
             parameters: {
-                layerType: LayerTypes.BingMapsLayer,
+                layerType: LayerTypes.FeaturesFileLayer,
                 model: {
-                    token: inputs.token,
-                    imagerySet: inputs.layer,
+                    filename: inputs.filename,
+                    filePath: inputs.filePath,
+                    autoSave: true,
+                    create: false
                 },
                 layer: {
-                    label: inputs.label,
+                    label: inputs.filename,
                     visible: true,
                 },
                 autoZoom: true
@@ -84,12 +71,6 @@ const ConnectBingMapsPage: React.FC = () => {
         dispatch(SetAppCommand(command));
         history.push('/page/Map');
     }
-
-
-    const renderLayers =  bingmapSet.map((f)=>(
-        <IonSelectOption value={f.value} key={f.value}>{f.title}</IonSelectOption>
-    ));
-
 
     return (
         <IonPage>
@@ -110,20 +91,18 @@ const ConnectBingMapsPage: React.FC = () => {
                 </IonHeader>
                 <form className="ion-padding" onSubmit={onSubmit}>
                     <IonItem>
-                        <IonLabel position="floating">Endpoint URL</IonLabel>
-                        <IonInput value={inputs.token} placeholder="Enter a valid url" onIonChange={editInput}
-                                  name="token"/>
+                        <IonLabel position="floating">Enter file name</IonLabel>
+                        <IonInput value={inputs.filename} placeholder="Enter filename" onIonChange={editInput}
+                                  name="filename"/>
                     </IonItem>
                     <IonItem>
-                        <IonLabel position="floating">Select Format</IonLabel>
-                        <IonSelect value={inputs.layer} okText="OK" cancelText="Cancel" onIonChange={editInput} name="layer">
-                            {renderLayers}
-                        </IonSelect>
+                        <IonLabel position="floating">Enter file path</IonLabel>
+                        <IonInput value={inputs.filePath} placeholder="Enter filename" onIonChange={editInput}
+                                  name="filePath"/>
                     </IonItem>
                     <IonItem>
-                        <IonLabel position="floating">Label</IonLabel>
-                        <IonInput value={inputs.label} placeholder="Enter name for the layer" onIonChange={editInput}
-                                  name="label"/>
+                        <IonLabel>Autosave</IonLabel>
+                        <IonCheckbox checked={inputs.autoSave} onIonChange={editInput} name="autoSave"  />
                     </IonItem>
                     <IonButton className="ion-margin-top" type="submit" expand="block">
                         Add layer
@@ -135,5 +114,6 @@ const ConnectBingMapsPage: React.FC = () => {
 };
 
 export {
-    ConnectBingMapsPage
+    ConnectLocalFilePage
 };
+

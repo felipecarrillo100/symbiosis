@@ -13,7 +13,8 @@ import {ApplicationCommands} from "../../commands/ApplicationCommands";
 import {LayerTypes} from "./layertypes/LayerTypes";
 import {LayerTreeScanner} from "./layertreetools/LayerTreeScanner";
 import {LayerConnectCommandsTypes} from "../../commands/ConnectCommands";
-import {ScreenMessage} from "../../screenmessage/ScreenMessage";
+import {ScreenMessage} from "../../screen/ScreenMessage";
+import {DefaultMapController} from "./controllers/DefaultMapController";
 
 interface Props {
     id?: string;
@@ -21,6 +22,7 @@ interface Props {
     proj?: string;
     onMapChange?: (newMap:Map | null) => void;
     onLayersChange?: (newMap:TreeNodeInterface | null) => void;
+    onCurrentLayersChange?: (layerId: string | null) => void;
     onSaveMap?: (newMap: { mapState: any; proj: string; layerCommand: LayerConnectCommandsTypes } | null) => void;
     command?: ApplicationCommandsTypes | null;
 }
@@ -139,7 +141,9 @@ const LuciadMap: React.FC<Props> = (props: React.PropsWithChildren<Props>) => {
             const newMap = new WebGLMap(divEl.current, { reference: getReference(proj.current) });
             const mapHandler = new MapHandler(newMap);
             mapHandler.onLayerTreeChange = notifyLayerChange;
+            mapHandler.onCurrentLayerChange = notifyCurrentLayerChange;
             (newMap as any).mapHandler = mapHandler;
+            newMap.controller = DefaultMapController.getDefaultMapController();
             map.current = newMap;
             notifyMapChange();
             mapLayerCreate();
@@ -156,6 +160,12 @@ const LuciadMap: React.FC<Props> = (props: React.PropsWithChildren<Props>) => {
     const notifyLayerChange = (node: TreeNodeInterface) => {
         if (typeof props.onLayersChange === "function") {
             props.onLayersChange(node);
+        }
+    }
+
+    const notifyCurrentLayerChange = (layerId: string | null) => {
+        if (typeof props.onCurrentLayersChange === "function") {
+            props.onCurrentLayersChange(layerId);
         }
     }
 

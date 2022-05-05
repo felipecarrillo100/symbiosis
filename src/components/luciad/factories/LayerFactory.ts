@@ -26,6 +26,13 @@ class LayerFactory {
         })
     }
 
+    static createFeaturesFileLayer(model: FeatureModel, layerOptions: any) {
+        return new Promise<FeatureLayer>((resolve)=>{
+            const layer = new FeatureLayer(model, layerOptions);
+            resolve(layer);
+        })
+    }
+
     static createWMSLayer(model: WMSTileSetModel, layerOptions: any) {
         return new Promise<WMSTileSetLayer>((resolve)=>{
             const layer = new WMSTileSetLayer(model, layerOptions)

@@ -1,6 +1,6 @@
-import {IonApp, IonRouterOutlet, IonSplitPane, setupIonicReact, useIonToast} from '@ionic/react';
-import { IonReactRouter } from '@ionic/react-router';
-import { Redirect, Route } from 'react-router-dom';
+import {IonApp, IonRouterOutlet, IonSplitPane, setupIonicReact, useIonAlert, useIonToast} from '@ionic/react';
+import {IonReactRouter} from '@ionic/react-router';
+import {Redirect, Route} from 'react-router-dom';
 import Menu from './components/Menu';
 
 /* Core CSS required for Ionic components to work properly */
@@ -39,6 +39,8 @@ import {IAppState} from "./reduxboilerplate/store";
 import {useEffect} from "react";
 import {ApplicationCommands} from "./commands/ApplicationCommands";
 import {ScreenMessageTypes} from "./interfaces/ScreenMessageTypes";
+import {AlertButton} from "@ionic/core/components";
+import {ConnectLocalFilePage} from "./pages/luciad/connect/ConnectLocalFilePage";
 
 setupIonicReact();
 
@@ -49,7 +51,9 @@ interface StateProps {
 
 const App: React.FC = () => {
 
-  const [present, dismiss] = useIonToast();
+  const [presentToast, dismissToast] = useIonToast();
+  const [presentAlert] = useIonAlert();
+
 
   const { command} = useSelector<IAppState, StateProps>((state: IAppState) => {
     return {
@@ -58,19 +62,35 @@ const App: React.FC = () => {
   });
 
   const displayToast = (parameters: {type: ScreenMessageTypes; message: string}) => {
-      present({
-        buttons: [{ text: 'hide', handler: () => dismiss() }],
+      presentToast({
+        buttons: [{ text: 'hide', handler: () => dismissToast() }],
         message: parameters.message,
         duration: 1500
       })
   }
 
+  const displayAlert = (parameter: { header: string; message: string; buttons?: AlertButton[]  }) => {
+    presentAlert({
+      cssClass: 'my-css',
+      header: parameter.header,
+      message: parameter.message,
+      buttons: parameter.buttons,
+      onDidDismiss: (e) => {
+        // console.log('Has dismissed')
+      }
+    });
+  }
+
   useEffect(()=>{
+
 
     if (command) {
       switch (command.action) {
         case ApplicationCommands.APPTOAST:
           displayToast(command.parameters);
+          break;
+        case ApplicationCommands.APPALERT:
+          displayAlert(command.parameters)
           break;
       }
     }
@@ -120,6 +140,9 @@ const App: React.FC = () => {
             </Route>
             <Route path="/page/connect/OGC3DTiles" exact={true}>
               <ConnectOGC3DTilesPage />
+            </Route>
+            <Route path="/page/connect/FileJson" exact={true}>
+              <ConnectLocalFilePage />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>

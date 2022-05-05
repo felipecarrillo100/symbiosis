@@ -103,7 +103,7 @@ const ConnectWMTSPage: React.FC = () => {
             const tileMatrixSet = tileMatrixSets.find(l=>l.identifier === inputs.tileMatrixSet);
             let referenceText = "";
             if (tileMatrixSet) {
-               referenceText = tileMatrixSet.referenceName;
+                referenceText = tileMatrixSet.referenceName;
                 const tileMatrices = tileMatrixSet.tileMatrices;
                 const tileMatricesIdxList = tileMatrices.map((el) => el.identifier );
                 const tileMatricesLimitsList = tileMatrices.map((el) => el.limits );

@@ -13,13 +13,13 @@ type CreateFeatureInLayerOnComplete = (feature: Feature, layer?: Layer) => any;
 
 class CreateFeatureInLayerController extends BasicCreateController {
     private layer:Layer;
-    private fallbackController:Controller;
+    private fallbackController:Controller | null;
     private callOnCompletion: CreateFeatureInLayerOnComplete | null;
     private promiseResolve: ((value?: (PromiseLike<Feature> | Feature)) => void ) | null;
     private promiseReject: ((reason?: any) => void) | null;
     private forceID: any;
 
-    constructor(shapeType:ShapeType, defaultProperties:any, layer: Layer, controller: Controller, options?: any){
+    constructor(shapeType:ShapeType, defaultProperties:any, layer: Layer, controller: Controller | null, options?: any){
         super(shapeType, defaultProperties, {finishOnSingleClick: true});
         options = options ? options: {};
 

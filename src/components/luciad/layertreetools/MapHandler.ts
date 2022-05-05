@@ -7,6 +7,8 @@ import {FeatureLayer} from "@luciad/ria/view/feature/FeatureLayer";
 import {LayerTreeVisitor} from "@luciad/ria/view/LayerTreeVisitor";
 import {LayerTreeScanner} from "./LayerTreeScanner";
 import TreeNodeInterface from "../../../interfaces/TreeNodeInterface";
+import * as stream from "stream";
+import {AdvanceLayerTools} from "../layerutils/AdvanceLayerTools";
 
 
 interface LayerTreeListeners  {
@@ -32,11 +34,14 @@ interface LayerTreeNodeChange { index: number; node: LayerTreeNode; path: LayerT
 
 class MapHandler {
     private map: Map | null;
+    private currentLayer : string | null;
     private layerTreeListeners: LayerTreeListeners = InitialLayerTreeListenerValues;
     public onLayerTreeChange: ((layes: TreeNodeInterface) => void) | null = null;
+    public onCurrentLayerChange: ((layerId: (string | null)) => void) | null = null;
 
     constructor(map:Map) {
         this.map = map;
+        this.currentLayer = null;
         this.attachListeners();
     }
 
@@ -69,7 +74,7 @@ class MapHandler {
 
     private addNewLayerListener = (layerObject: LayerTreeNodeChange) => {
         const layer = layerObject.node as any;
-        // console.log(' * Layer Added: ' + layer.label + ":" + layer.id);
+        this.setCurrentLayer(layer.id);
 
         layer.layerListeners = {
             PaintRepresentationVisibilityChanged: null,
@@ -108,7 +113,7 @@ class MapHandler {
                 const QueryFinished = featuerLayer.workingSet.on("QueryFinished", () => {
                     const length = featuerLayer.workingSet.get().length;
                     if (length>=(featuerLayer as any).restoreCommand.parameters.layer.maxFeatures) {
-                        this.logInfo("WFS Layer " + featuerLayer.label + " maxFeatures exceeds " + (featuerLayer as any).restoreCommand.layer.maxFeatures)
+                        this.logInfo("WFS Layer " + featuerLayer.label  + " maxFeatures exceeds " + (featuerLayer as any).restoreCommand.layer.maxFeatures)
                     }
                     QueryFinished.remove();
                 });
@@ -124,8 +129,26 @@ class MapHandler {
         this.triggerLayerChange();
     }
 
+    public setCurrentLayer(value: string | null) {
+        let newValue = null;
+        if (this.map && value && AdvanceLayerTools.layerIDExistsInMap(this.map, value)) {
+           newValue = value;
+        }
+        this.currentLayer = newValue;
+        if (typeof this.onCurrentLayerChange === "function") {
+            this.onCurrentLayerChange(this.currentLayer);
+        }
+    }
+
     private layerRemovedListener = (layerObject: LayerTreeNodeChange) => {
-        // console.log("Remove: " + layerObject.node.label + " " + layerObject.node.id)
+        // console.log("Remove: " + layerObject.node.label + " " + layerObject.node.id);
+
+        if (this.map &&this.currentLayer === layerObject.node.id && this.map.layerTree.children && this.map.layerTree.children.length>0 && this.map.layerTree.children[0].id !== layerObject.node.id) {
+            this.setCurrentLayer(this.map.layerTree.children[this.map.layerTree.children.length-1].id);
+        } else {
+            this.setCurrentLayer(null);
+        }
+
         const layer = layerObject.node as any;
         const model = layer.model;
         if (this.isDestroyableModel(model)) {

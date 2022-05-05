@@ -10,6 +10,8 @@ import {WMTSTileSetModel} from "@luciad/ria/model/tileset/WMTSTileSetModel";
 import {FusionTileSetModel} from "@luciad/ria/model/tileset/FusionTileSetModel";
 import {OGC3DTilesModel} from "@luciad/ria/model/tileset/OGC3DTilesModel";
 import {HSPCTilesModel} from "@luciad/ria/model/tileset/HSPCTilesModel";
+import {MemoryStore} from "@luciad/ria/model/store/MemoryStore";
+import {FeatureFileStore} from "../stores/FeatureFileStore";
 
 class ModelFactory {
 
@@ -57,7 +59,6 @@ class ModelFactory {
         });
     }
 
-
     static createWFSModel(modelOptions: any) {
         return new Promise<FeatureModel>((resolve, reject)=> {
             const store = new WFSFeatureStore({
@@ -66,6 +67,14 @@ class ModelFactory {
                 reference: getReference(modelOptions.referenceText)
             });
 
+            const model = new FeatureModel(store);
+            resolve(model);
+        });
+    }
+
+    static createFeaturesFileModel(modelOptions: any) {
+        return new Promise<FeatureModel>((resolve, reject)=> {
+            const store = new FeatureFileStore(modelOptions);
             const model = new FeatureModel(store);
             resolve(model);
         });
