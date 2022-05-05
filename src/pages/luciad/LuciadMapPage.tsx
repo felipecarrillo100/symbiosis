@@ -31,18 +31,16 @@ import {ApplicationCommands} from "../../commands/ApplicationCommands";
 import {FileUtils} from "../../utils/FileUtils";
 import {useEffect, useState} from "react";
 import {
-    addOutline,
     ellipsisVerticalCircleOutline, locateOutline,
     resizeOutline, scanOutline,
 } from "ionicons/icons";
-import RulerController from "../../components/luciad/controllers/measurement/ruler2d/RulerController";
-import RectangleSelectController from "../../components/luciad/controllers/RectangleSelectController";
-import {MapNavigatorFitOptions} from "@luciad/ria/view/MapNavigator";
-import {createBounds} from "@luciad/ria/shape/ShapeFactory";
-import {getReference} from "@luciad/ria/reference/ReferenceProvider";
+
 import {EditTools} from "./toolbars/EditTools";
 import {ControllerToolSelector} from "./toolbars/ControllerToolSelector";
 import {LocationFabButton} from "./toolbars/LocationFabButton";
+import {Capacitor} from "@capacitor/core";
+import {IonicFileUtils} from "../../ionictools/IonicFileUtils";
+import {ScreenMessage} from "../../screen/ScreenMessage";
 
 const defaultFilename = "noname.wsp";
 interface StateProps {
@@ -116,7 +114,14 @@ const LuciadMapPage: React.FC = () => {
     const onSaveMap = (mapStatus: { mapState: any; proj: string; layerCommand: LayerConnectCommandsTypes } | null) => {
         if (mapStatus) {
             console.log(mapStatus);
-            FileUtils.download(JSON.stringify(mapStatus), workspaceName, "application/json")
+            const platform = Capacitor.getPlatform();
+            if (platform!=="web") {
+                IonicFileUtils.downloadToLocalFolder(JSON.stringify(mapStatus), workspaceName, "application/json").then((saved)=>{
+                    if (saved) ScreenMessage.info("File saved");
+                })
+            } else {
+                FileUtils.download(JSON.stringify(mapStatus), workspaceName, "application/json");
+            }
         }
     }
     const restoreMap = (mapStatus: {mapState: any; proj: string; layerCommand: LayerConnectCommandsTypes}) => {

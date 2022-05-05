@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">symbiosis</string>
+    <string name="title_activity_main">symbiosis</string>
+    <string name="package_name">com.hexagon.symbiosis</string>
+    <string name="custom_url_scheme">com.hexagon.symbiosis</string>
+</resources>

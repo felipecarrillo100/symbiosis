@@ -41,6 +41,8 @@ import {ApplicationCommands} from "./commands/ApplicationCommands";
 import {ScreenMessageTypes} from "./interfaces/ScreenMessageTypes";
 import {AlertButton} from "@ionic/core/components";
 import {ConnectLocalFilePage} from "./pages/luciad/connect/ConnectLocalFilePage";
+import {OpenFileFromFileSysyemPage} from "./pages/luciad/OpenFileFromFileSysyemPage";
+import {Capacitor} from "@capacitor/core";
 
 setupIonicReact();
 
@@ -96,6 +98,8 @@ const App: React.FC = () => {
     }
   }, [command] );
 
+  const platform = Capacitor.getPlatform();
+
   return (
     <IonApp>
       <IonReactRouter>
@@ -130,7 +134,10 @@ const App: React.FC = () => {
               <ConnectBingMapsPage />
             </Route>
             <Route path="/page/FileOpen" exact={true}>
-              <OpenFilePage />
+              {platform === "web" ?
+                  <OpenFilePage /> :
+                  <OpenFileFromFileSysyemPage />
+              }
             </Route>
             <Route path="/page/FileSave" exact={true}>
               <SaveFilePage />

@@ -1,0 +1,6 @@
+{
+	"appId": "com.hexagon.symbiosis",
+	"appName": "symbiosis",
+	"webDir": "build",
+	"bundledWebRuntime": false
+}
