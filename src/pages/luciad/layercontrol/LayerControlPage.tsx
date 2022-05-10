@@ -37,6 +37,8 @@ import {ApplicationCommands} from "../../../commands/ApplicationCommands";
 import {SetAppCommand} from "../../../reduxboilerplate/command/actions";
 import {MapHandler} from "../../../components/luciad/layertreetools/MapHandler";
 import {LayerControlLabelProvider} from "./LayerControlLabelProvider";
+import RectangleSelectController from "../../../components/luciad/controllers/RectangleSelectController";
+import {DefaultMapController} from "../../../components/luciad/controllers/DefaultMapController";
 
 interface StateProps {
     treeNode: TreeNodeInterface | null;
@@ -114,6 +116,17 @@ const LayerControlPage: React.FC = () => {
             if (node) {
                node.visible = !node.visible;
             }
+        }
+    }
+
+    const captureLayer = (nodeElement: TreeNodeInterface) => (event: any) => {
+        if (nodeElement && nodeElement.id && map) {
+            const controller= new RectangleSelectController(()=>{
+                console.log("Capture!!");
+                map.controller = DefaultMapController.getDefaultMapController();
+            });
+            map.controller = controller;
+            history.push('/page/Map');
         }
     }
 
@@ -215,7 +228,7 @@ const LayerControlPage: React.FC = () => {
                 </IonItemOption>
             </IonItemOptions>
                 <IonItem color={isSelected ? "medium": undefined}>
-                    <LayerControlLabelProvider node={node} onZoomClick={fitToBounds(node)} onClick={setAsCurrentLayer(node)}/>
+                    <LayerControlLabelProvider node={node} onZoomClick={fitToBounds(node)} onCaptureClick={captureLayer(node)} onClick={setAsCurrentLayer(node)}/>
                     {
                         canMove ?
                         <IonReorder slot="end"/> :

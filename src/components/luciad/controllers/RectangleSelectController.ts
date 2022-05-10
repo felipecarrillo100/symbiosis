@@ -9,6 +9,7 @@ import { HandleEventResult } from "@luciad/ria/view/controller/HandleEventResult
 import { GestureEventType } from "@luciad/ria/view/input/GestureEventType";
 import { GeoCanvas } from "@luciad/ria/view/style/GeoCanvas";
 import { Map } from "@luciad/ria/view/Map";
+import {Polygon} from "@luciad/ria/shape/Polygon";
 
 
 /**
@@ -28,7 +29,7 @@ class RectangleSelectController extends Controller {
     private inverted: boolean = false;
     private prevCursorValue: string = "";
 
-    constructor(callbackOnCompleted?: any) {
+    constructor(callbackOnCompleted?: (polygon:Polygon, inverted: boolean)=>void) {
         super();
         this.callbackOnCompleted = callbackOnCompleted ? callbackOnCompleted : null;
         this.myRectangleStyle = {
@@ -89,7 +90,7 @@ class RectangleSelectController extends Controller {
                 points.push(ShapeFactory.createPoint(modelBounds.reference, [modelBounds.x+modelBounds.width, modelBounds.y]));
                 points.push(ShapeFactory.createPoint(modelBounds.reference, [modelBounds.x+modelBounds.width, modelBounds.y+modelBounds.height]));
                 points.push(ShapeFactory.createPoint(modelBounds.reference, [modelBounds.x, modelBounds.y+modelBounds.height]));
-                const newShape = ShapeFactory.createPolygon(modelBounds.reference, points);
+                const newShape:Polygon = ShapeFactory.createPolygon(modelBounds.reference, points) ;
                 this.callbackOnCompleted(newShape, this.inverted);
             }
         }

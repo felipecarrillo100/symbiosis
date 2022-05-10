@@ -127,6 +127,7 @@ class RulerController extends Controller {
   private _formatUtil: FormatUtil;
   private lineType: LineType;
   private intermediateLabels: string[];
+  private prevCursorValue: string = "";
 
   constructor(options?: any){
     super();
@@ -315,6 +316,8 @@ class RulerController extends Controller {
    * perform any cleanup here.
    */
   public onDeactivate(map: Map) {
+    if (this.pvMap) this.pvMap.domNode.style.cursor =  this.prevCursorValue;
+
     this.cleanupLine();
     this.pvText = "";
     this.pvMap = null;
@@ -323,6 +326,11 @@ class RulerController extends Controller {
 
   private init(map: Map) {
     this.pvMap = map;
+
+    if (this.pvMap) {
+      this.prevCursorValue = this.pvMap.domNode.style.cursor;
+      this.pvMap.domNode.style.cursor = "crosshair";
+    }
 
     this.pvPointIcon = this.pvOptions.pointIcon || DEFAULT_POINT_ICON;
 

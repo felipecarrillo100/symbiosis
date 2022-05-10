@@ -1,11 +1,12 @@
 import React, {MouseEventHandler} from "react";
-import {IonAvatar, IonLabel} from "@ionic/react";
+import {IonAvatar, IonButton, IonLabel} from "@ionic/react";
 import TreeNodeInterface from "../../../interfaces/TreeNodeInterface";
 import {RasterTileSetModel} from "@luciad/ria/model/tileset/RasterTileSetModel";
 import {RasterDataType} from "@luciad/ria/model/tileset/RasterDataType";
 
 
 interface Props {
+    onCaptureClick?: MouseEventHandler<HTMLIonAvatarElement> | undefined;
     onZoomClick?: MouseEventHandler<HTMLIonAvatarElement> | undefined;
     onClick?: MouseEventHandler<HTMLIonAvatarElement> | undefined;
     node: TreeNodeInterface;
@@ -30,6 +31,15 @@ const LayerControlLabelProvider: React.FC<Props> = (props: Props) => {
     }
     console.log("node: ",props.node);
     console.log("layer: ", props.node.realNode);
+    let canCapture = false;
+    if (props.node.realNode && (props.node.realNode as any).restoreCommand && (props.node.realNode as any).restoreCommand.parameters.layerType === "TMSLayer") {
+        canCapture = true;
+    }
+    if (props.node.realNode && (props.node.realNode as any).restoreCommand && (props.node.realNode as any).restoreCommand.parameters.layerType === "WMTSLayer" &&
+        (props.node.realNode as any).restoreCommand.parameters.model.tileMatrixSet === "GoogleMapsCompatible" )
+    {
+        canCapture = true;
+    }
     return (
         <>
             <IonAvatar slot="start" onClick={props.onZoomClick} >
@@ -38,7 +48,7 @@ const LayerControlLabelProvider: React.FC<Props> = (props: Props) => {
             <IonLabel onClick={props.onClick}>
                 <h2>{props.node.label}</h2>
                 <h3>{info}</h3>
-                <p>Unknown source</p>
+                { canCapture && <IonButton size="small" color="primary" onClick={(e)=>{e.preventDefault();e.stopPropagation(); if (props.onCaptureClick) props.onCaptureClick(e)}}>Capture</IonButton> }
             </IonLabel>
         </>
 
