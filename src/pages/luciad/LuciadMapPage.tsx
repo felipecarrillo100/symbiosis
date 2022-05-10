@@ -126,14 +126,16 @@ const LuciadMapPage: React.FC = () => {
     }
     const restoreMap = (mapStatus: {mapState: any; proj: string; layerCommand: LayerConnectCommandsTypes}) => {
         dispatch(SetLuciadMapProj(mapStatus.proj));
-        const command = CreateCommand({
-            action: ApplicationCommands.MAPRESTORE,
-            parameters: {
-                layerCommand: mapStatus.layerCommand,
-                mapState: mapStatus.mapState,
-            }
-        })
-        dispatch(SetAppCommand(command));
+        setTimeout(()=>{
+            const command = CreateCommand({
+                action: ApplicationCommands.MAPRESTORE,
+                parameters: {
+                    layerCommand: mapStatus.layerCommand,
+                    mapState: mapStatus.mapState,
+                }
+            })
+            dispatch(SetAppCommand(command));
+        }, 10);
     }
 
     const pageTitle = "Map" + " (" + workspaceName + ")";

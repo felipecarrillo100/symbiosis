@@ -44,31 +44,31 @@ class MapBuilder {
             let layerPromise = null;
             switch (command.parameters.layerType) {
                 case LayerTypes.WFSLayer:
-                    layerPromise = MapBuilder.buildWFSLayer(command);
+                    layerPromise = MapBuilder.buildAnyLayer<FeatureModel, FeatureLayer>(command, ModelFactory.createWFSModel, LayerFactory.createWFSLayer);
                     break;
                 case LayerTypes.FeaturesFileLayer:
-                    layerPromise = MapBuilder.buildFeaturesFileLayer(command);
+                    layerPromise = MapBuilder.buildAnyLayer<FeatureModel, FeatureLayer>(command, ModelFactory.createFeaturesFileModel, LayerFactory.createFeaturesFileLayer);
                     break;
                 case LayerTypes.WMSLayer:
-                    layerPromise = MapBuilder.buildWMSLayer(command);
+                    layerPromise = MapBuilder.buildAnyLayer<WMSTileSetModel, WMSTileSetLayer>(command, ModelFactory.createWMSModel, LayerFactory.createWMSLayer);
                     break;
                 case LayerTypes.WMTSLayer:
-                    layerPromise = MapBuilder.buildWMTSLayer(command);
+                    layerPromise = MapBuilder.buildAnyLayer<WMTSTileSetModel, RasterTileSetLayer>(command, ModelFactory.createWMTSModel, LayerFactory.createWMTSLayer);
                     break;
                 case LayerTypes.LTSLayer:
-                    layerPromise = MapBuilder.buildLTSLayer(command);
+                    layerPromise = MapBuilder.buildAnyLayer<FusionTileSetModel, RasterTileSetLayer>(command, ModelFactory.createLTSModel, LayerFactory.createLTSLayer);
                     break;
                 case LayerTypes.TMSLayer:
-                    layerPromise = MapBuilder.buildTMSLayer(command);
+                    layerPromise = MapBuilder.buildAnyLayer<UrlTileSetModel, RasterTileSetLayer>(command, ModelFactory.createTMSModel, LayerFactory.createTMSLayer);
                     break;
                 case LayerTypes.DatabaseRasterTileset:
-                    layerPromise = MapBuilder.buildDatabaseRasterTilesetLayer(command);
+                    layerPromise = MapBuilder.buildAnyLayer<DatabaseTilesetModel, RasterTileSetLayer>(command, ModelFactory.createDatabaseTilesetModel, LayerFactory.createDatabaseTilesetLayer);
                     break
                 case LayerTypes.BingMapsLayer:
-                    layerPromise = MapBuilder.buildBingMapsLayer(command);
+                    layerPromise = MapBuilder.buildAnyLayer<BingMapsTileSetModel, RasterTileSetLayer>(command, ModelFactory.createBingMapsModel, LayerFactory.createBingMapsLayer);
                     break;
                 case LayerTypes.OGC3DTilesLayer:
-                    layerPromise = MapBuilder.buildOGC3DTilesLayer(command);
+                    layerPromise = MapBuilder.buildAnyLayer<OGC3DTilesModel, TileSet3DLayer>(command, ModelFactory.createOGC3DTilesModel, LayerFactory.createOGC3DTilesLayer);
                     break;
                 case LayerTypes.Root:
                     layerPromise = MapBuilder.buildRoot(command, map);
@@ -106,123 +106,6 @@ class MapBuilder {
                 resolve(layer);
             })
         })
-    }
-
-    static buildWFSLayer(command: LayerConnectCommandsTypes) {
-        return new Promise<FeatureLayer>((resolve => {
-            const modelPromise = command.parameters.reusableModel ? PromiseToModel<FeatureModel>(command.parameters.reusableModel) : ModelFactory.createWFSModel(command.parameters.model);
-            modelPromise.then((model)=> {
-                delete command.parameters.reusableModel;
-                const layerPromise = LayerFactory.createWFSLayer(model, command.parameters.layer);
-                layerPromise.then(layer=>{
-                    resolve(layer);
-                })
-            })
-        }));
-    }
-
-    static buildFeaturesFileLayer(command: LayerConnectCommandsTypes) {
-        return new Promise<FeatureLayer>((resolve => {
-            const modelPromise = command.parameters.reusableModel ? PromiseToModel<FeatureModel>(command.parameters.reusableModel) : ModelFactory.createFeaturesFileModel(command.parameters.model);
-            modelPromise.then((model)=> {
-                delete command.parameters.reusableModel;
-                const layerPromise = LayerFactory.createFeaturesFileLayer(model, command.parameters.layer);
-                layerPromise.then(layer=>{
-                    resolve(layer);
-                })
-            })
-        }));
-    }
-
-    private static buildWMSLayer(command: LayerConnectCommandsTypes) {
-        return new Promise<WMSTileSetLayer>((resolve => {
-            const modelPromise = command.parameters.reusableModel ? PromiseToModel<WMSTileSetModel>(command.parameters.reusableModel) : ModelFactory.createWMSModel(command.parameters.model);
-            modelPromise.then((model)=>{
-                delete command.parameters.reusableModel;
-                const layerPromise = LayerFactory.createWMSLayer(model, command.parameters.layer);
-                layerPromise.then(layer=>{
-                    resolve(layer);
-                })
-            })
-        }))
-    }
-
-    private static buildWMTSLayer(command: LayerConnectCommandsTypes) {
-        return new Promise<RasterTileSetLayer>((resolve => {
-            const modelPromise = command.parameters.reusableModel ? PromiseToModel<WMTSTileSetModel>(command.parameters.reusableModel) : ModelFactory.createWMTSModel(command.parameters.model);
-            modelPromise.then((model)=>{
-                delete command.parameters.reusableModel;
-                const layerPromise = LayerFactory.createWMTSLayer(model, command.parameters.layer);
-                layerPromise.then(layer=>{
-                    resolve(layer);
-                })
-            })
-        }))
-    }
-
-    private static buildLTSLayer(command: LayerConnectCommandsTypes) {
-        return new Promise<RasterTileSetLayer>((resolve => {
-            const modelPromise = command.parameters.reusableModel ? PromiseToModel<FusionTileSetModel>(command.parameters.reusableModel) : ModelFactory.createLTSModel(command.parameters.model);
-            modelPromise.then((model)=>{
-                delete command.parameters.reusableModel;
-                const layerPromise = LayerFactory.createLTSLayer(model, command.parameters.layer);
-                layerPromise.then(layer=>{
-                    resolve(layer);
-                })
-            })
-        }))
-    }
-
-    private static buildTMSLayer(command: LayerConnectCommandsTypes) {
-        return new Promise<RasterTileSetLayer>((resolve => {
-            const modelPromise = command.parameters.reusableModel ? PromiseToModel<UrlTileSetModel>(command.parameters.reusableModel) : ModelFactory.createTMSModel(command.parameters.model);
-            modelPromise.then((model)=>{
-                delete command.parameters.reusableModel;
-                const layerPromise = LayerFactory.createTMSLayer(model, command.parameters.layer);
-                layerPromise.then(layer=>{
-                    resolve(layer);
-                })
-            })
-        }))
-    }
-
-    private static buildDatabaseRasterTilesetLayer(command: LayerConnectCommandsTypes) {
-        return new Promise<RasterTileSetLayer>((resolve => {
-            const modelPromise = command.parameters.reusableModel ? PromiseToModel<DatabaseTilesetModel>(command.parameters.reusableModel) : ModelFactory.createDatabaseTilesetModel(command.parameters.model);
-            modelPromise.then((model)=>{
-                delete command.parameters.reusableModel;
-                const layerPromise = LayerFactory.createDatabaseTilesetLayer(model, command.parameters.layer);
-                layerPromise.then(layer=>{
-                    resolve(layer);
-                })
-            })
-        }))
-    }
-
-    private static buildOGC3DTilesLayer(command: LayerConnectCommandsTypes) {
-        return new Promise<TileSet3DLayer>((resolve => {
-            const modelPromise = command.parameters.reusableModel ? PromiseToModel<OGC3DTilesModel>(command.parameters.reusableModel) : ModelFactory.createOGC3DTilesModel(command.parameters.model);
-            modelPromise.then((model)=>{
-                delete command.parameters.reusableModel;
-                const layerPromise = LayerFactory.createOGC3DTilesLayer(model, command.parameters.layer);
-                layerPromise.then(layer=>{
-                    resolve(layer);
-                })
-            })
-        }))
-    }
-
-    private static buildBingMapsLayer(command: LayerConnectCommandsTypes) {
-        return new Promise<RasterTileSetLayer>((resolve => {
-            const modelPromise = command.parameters.reusableModel ? PromiseToModel<BingMapsTileSetModel>(command.parameters.reusableModel) : ModelFactory.createBingMapsModel(command.parameters.model);
-            modelPromise.then((model)=>{
-                delete command.parameters.reusableModel;
-                const layerPromise = LayerFactory.createBingMapsLayer(model, command.parameters.layer);
-                layerPromise.then(layer=>{
-                    resolve(layer);
-                })
-            })
-        }))
     }
 
     private static clone(command: ApplicationCommandsTypes) {
@@ -266,8 +149,21 @@ class MapBuilder {
         // ScreenMessage.error(s);
     }
 
+    private static buildAnyLayer<M,L>(command: LayerConnectCommandsTypes, createModel: (modelOptions: any)=>Promise<M>, createLayer: (m:M, layerOptions: any) => Promise<L>) {
+        return new Promise<L>((resolve => {
+            const modelPromise = command.parameters.reusableModel ? PromiseToModel<M>(command.parameters.reusableModel) : createModel(command.parameters.model);
+            modelPromise.then((model)=>{
+                delete command.parameters.reusableModel;
+                const layerPromise = createLayer(model, command.parameters.layer);
+                layerPromise.then(layer=>{
+                    resolve(layer);
+                })
+            })
+        }))
+    }
 
 }
+
 
 export {
     MapBuilder

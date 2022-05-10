@@ -206,14 +206,8 @@ const LayerControlPage: React.FC = () => {
 
 
     const layers = treeNode && map ? treeNode.nodes.map((node) => {
-        let info = "";
-        if (node.treeNodeType === "LAYER_FEATURE") {
-            info = "Features";
-        } else {
-            info = "Raster"
-        }
-            const isSelected = node.id ===currentLayerId;
-            return (
+        const isSelected = node.id ===currentLayerId;
+        return (
         <IonItemSliding key={node.id} >
             <IonItemOptions side="start">
                 <IonItemOption onClick={changeSettings(node)}>
