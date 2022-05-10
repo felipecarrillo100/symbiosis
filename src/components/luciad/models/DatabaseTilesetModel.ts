@@ -15,11 +15,14 @@ interface ModelOptions {
     levelCount?: number;
     level0Columns?: number;
     level0Rows?: number;
+    invertY?: boolean;
     dataType?: RasterDataType;
     samplingMode?: RasterSamplingMode;
 }
 
 class DatabaseTilesetModel extends RasterTileSetModel {
+    private invertY: boolean;
+
     constructor(modelOptions: ModelOptions) {
         const REF_WEBMERCATOR = getReference("EPSG:3857");
         const bounds = createBounds(REF_WEBMERCATOR, [-20037508.34278924, 40075016.68557848, -20037508.3520, 40075016.7040]);
@@ -36,9 +39,10 @@ class DatabaseTilesetModel extends RasterTileSetModel {
             samplingMode: modelOptions.samplingMode,
         }
         super(options);
+        this.invertY = typeof modelOptions.invertY !== "undefined" ? modelOptions.invertY : true;
     }
 
-    getImage(tile: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void, onError: (tile: TileCoordinate, error?: any) => void, abortSignal: AbortSignal | null): void {
+    private drawImageLocally(tile:TileCoordinate, tileCorrected: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void) {
         const canvas = document.createElement("canvas");
         canvas.width = 256;
         canvas.height = 256;
@@ -49,17 +53,11 @@ class DatabaseTilesetModel extends RasterTileSetModel {
             ctx.strokeStyle = "red";
             ctx.rect(10, 10, 256-20, 256-20);
             ctx.stroke();
-            ctx.fillStyle = "blue";
-            ctx.fillRect(0, 0, 128, 64);
-
-            ctx.fillStyle = "blue";
-            ctx.fillRect(256-128, 256-64, 255, 255);
-
             ctx.font = "16px Arial";
-
             ctx.textAlign = "center";
-            const text = `x=${tile.x} y=${tile.y} level=${tile.level}   `
-            ctx.fillText(text,128, 128);
+
+            const text = `x=${tileCorrected.x} y=${tileCorrected.y} level=${tileCorrected.level}   `
+            ctx.fillText(text,128, 64);
         }
 
         canvas.toBlob(function(blob) {
@@ -76,6 +74,14 @@ class DatabaseTilesetModel extends RasterTileSetModel {
                 newImg.src = url;
             }
         });
+    }
+
+    getImage(tile: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void, onError: (tile: TileCoordinate, error?: any) => void, abortSignal: AbortSignal | null): void {
+        const tileCorrected = {...tile};
+        const maxY = Math.pow(2, tile.level) - 1;
+        const correctedY = this.invertY ? maxY - tile.y : tile.y;
+        tileCorrected.y = correctedY;
+        this.drawImageLocally(tile, tileCorrected, onSuccess);
     }
 }
 

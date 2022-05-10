@@ -39,6 +39,8 @@ import {MapHandler} from "../../../components/luciad/layertreetools/MapHandler";
 import {LayerControlLabelProvider} from "./LayerControlLabelProvider";
 import RectangleSelectController from "../../../components/luciad/controllers/RectangleSelectController";
 import {DefaultMapController} from "../../../components/luciad/controllers/DefaultMapController";
+import {TileManager} from "../../../utils/TileManager";
+import {LayerCapturePage} from "./LayerCapturePage";
 
 interface StateProps {
     treeNode: TreeNodeInterface | null;
@@ -121,9 +123,10 @@ const LayerControlPage: React.FC = () => {
 
     const captureLayer = (nodeElement: TreeNodeInterface) => (event: any) => {
         if (nodeElement && nodeElement.id && map) {
-            const controller= new RectangleSelectController(()=>{
-                console.log("Capture!!");
+            const controller= new RectangleSelectController((shape)=>{
                 map.controller = DefaultMapController.getDefaultMapController();
+                const bounds = shape.bounds;
+                history.push(`/page/captureLayer/${nodeElement.id}/${bounds.x}/${bounds.y}/${bounds.x+bounds.width}/${bounds.y+bounds.height}`);
             });
             map.controller = controller;
             history.push('/page/Map');
