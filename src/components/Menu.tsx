@@ -136,6 +136,12 @@ const ConnectSubmenu: AppSubMenu = {
             iosIcon: analyticsOutline,
             mdIcon: analyticsSharp
         },
+        {
+            title: 'Database',
+            url: '/page/connect/Database',
+            iosIcon: imageOutline,
+            mdIcon: imageSharp
+        },
     ]
 }
 

@@ -22,20 +22,21 @@ import {
     IonToggle,
     IonToolbar
 } from '@ionic/react';
-import '../Page.scss';
+import '../../Page.scss';
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {IAppState} from "../../reduxboilerplate/store";
-import TreeNodeInterface from "../../interfaces/TreeNodeInterface";
+import {IAppState} from "../../../reduxboilerplate/store";
+import TreeNodeInterface from "../../../interfaces/TreeNodeInterface";
 import {Map} from "@luciad/ria/view/Map";
 import {settingsOutline, settingsSharp, trashOutline, trashSharp} from "ionicons/icons";
-import {AdvanceLayerTools} from "../../components/luciad/layerutils/AdvanceLayerTools";
+import {AdvanceLayerTools} from "../../../components/luciad/layerutils/AdvanceLayerTools";
 import {useHistory} from "react-router";
 import {Layer} from "@luciad/ria/view/Layer";
-import {CreateCommand} from "../../commands/CreateCommand";
-import {ApplicationCommands} from "../../commands/ApplicationCommands";
-import {SetAppCommand} from "../../reduxboilerplate/command/actions";
-import {MapHandler} from "../../components/luciad/layertreetools/MapHandler";
+import {CreateCommand} from "../../../commands/CreateCommand";
+import {ApplicationCommands} from "../../../commands/ApplicationCommands";
+import {SetAppCommand} from "../../../reduxboilerplate/command/actions";
+import {MapHandler} from "../../../components/luciad/layertreetools/MapHandler";
+import {LayerControlLabelProvider} from "./LayerControlLabelProvider";
 
 interface StateProps {
     treeNode: TreeNodeInterface | null;
@@ -204,12 +205,10 @@ const LayerControlPage: React.FC = () => {
     }
 
 
-    const layers = treeNode ? treeNode.nodes.map((node) => {
+    const layers = treeNode && map ? treeNode.nodes.map((node) => {
         let info = "";
-        let icon = "/assets/avatars/satellite.jpg";
         if (node.treeNodeType === "LAYER_FEATURE") {
             info = "Features";
-            icon = "/assets/avatars/vector.jpg"
         } else {
             info = "Raster"
         }
@@ -222,14 +221,7 @@ const LayerControlPage: React.FC = () => {
                 </IonItemOption>
             </IonItemOptions>
                 <IonItem color={isSelected ? "medium": undefined}>
-                    <IonAvatar slot="start" onClick={fitToBounds(node)} >
-                        <img src={icon} style={{borderRadius:0}} alt="LayerType"/>
-                    </IonAvatar>
-                    <IonLabel onClick={setAsCurrentLayer(node)}>
-                        <h2>{node.label}</h2>
-                        <h3>{info}</h3>
-                        <p>Unknown source</p>
-                    </IonLabel>
+                    <LayerControlLabelProvider node={node} onZoomClick={fitToBounds(node)} onClick={setAsCurrentLayer(node)}/>
                     {
                         canMove ?
                         <IonReorder slot="end"/> :

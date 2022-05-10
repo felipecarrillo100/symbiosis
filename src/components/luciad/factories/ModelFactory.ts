@@ -12,6 +12,8 @@ import {OGC3DTilesModel} from "@luciad/ria/model/tileset/OGC3DTilesModel";
 import {HSPCTilesModel} from "@luciad/ria/model/tileset/HSPCTilesModel";
 import {MemoryStore} from "@luciad/ria/model/store/MemoryStore";
 import {FeatureFileStore} from "../stores/FeatureFileStore";
+import {DatabaseTilesetModel} from "../models/DatabaseTilesetModel";
+import {RasterTileSetModel} from "@luciad/ria/model/tileset/RasterTileSetModel";
 
 class ModelFactory {
 
@@ -123,8 +125,6 @@ class ModelFactory {
     static createTMSModel(modelOptions: any) {
         return new Promise<UrlTileSetModel>((resolve, reject) => {
             const REF_WEBMERCATOR = getReference("EPSG:3857");
-
-
             const bounds = createBounds(REF_WEBMERCATOR, [-20037508.34278924, 40075016.68557848, -20037508.3520, 40075016.7040]);
             const reference = REF_WEBMERCATOR;
             const model = new UrlTileSetModel({
@@ -135,6 +135,17 @@ class ModelFactory {
                 levelCount: modelOptions.levelCount
                 }
             );
+            if (model) {
+                resolve(model);
+            } else {
+                reject();
+            }
+        });
+    }
+
+    static createDatabaseTilesetModel(modelOptions: any) {
+        return new Promise<DatabaseTilesetModel>((resolve, reject) => {
+            const model = new DatabaseTilesetModel({});
             if (model) {
                 resolve(model);
             } else {

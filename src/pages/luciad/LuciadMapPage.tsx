@@ -168,7 +168,7 @@ const LuciadMapPage: React.FC = () => {
                 </IonFab>
 
                 <IonFab vertical="bottom" horizontal="end" slot="fixed" >
-                    <LocationFabButton map={map}/>
+                    <LocationFabButton />
                 </IonFab>
             </IonContent>
         </IonPage>

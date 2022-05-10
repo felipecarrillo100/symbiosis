@@ -14,7 +14,8 @@ const initState: LuciadMapReduxState = {
   currentLayerId: null,
   treeNode: null,
   map: null,
-  proj: "EPSG:4978"
+  // proj: "EPSG:4978",
+  proj: "EPSG:3857",
 };
 
 const LuciadMapReducer = (

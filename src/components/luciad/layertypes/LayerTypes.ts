@@ -13,4 +13,5 @@ export enum LayerTypes {
     EditableFeatureLayer = "EditableFeatureLayer",
     Root = "root",
     FeaturesFileLayer = "FeaturesFileLayer",
+    DatabaseRasterTileset = "DatabaseRasterTileset",
 }

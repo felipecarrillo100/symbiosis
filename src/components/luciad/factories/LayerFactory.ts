@@ -13,11 +13,9 @@ import {HSPCTilesModel} from "@luciad/ria/model/tileset/HSPCTilesModel";
 import {LayerType} from "@luciad/ria/view/LayerType";
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer";
 import ExpressionBuilder from "../expressions/ExpressionBuilder";
+import {DatabaseTilesetModel} from "../models/DatabaseTilesetModel";
 
 class LayerFactory {
-    public static createWMSTileSetLayer(model: WMSTileSetModel, options: LayerConstructorOptions) {
-        return new WMSTileSetLayer(model, options);
-    }
 
     static createWFSLayer(model: FeatureModel, layerOptions: any) {
         return new Promise<FeatureLayer>((resolve)=>{
@@ -41,6 +39,13 @@ class LayerFactory {
     }
 
     static createTMSLayer(model: UrlTileSetModel, layerOptions: any) {
+        return new Promise<RasterTileSetLayer>((resolve)=>{
+            const layer = new RasterTileSetLayer(model, layerOptions);
+            resolve(layer);
+        })
+    }
+
+    static createDatabaseTilesetLayer(model: DatabaseTilesetModel, layerOptions: any) {
         return new Promise<RasterTileSetLayer>((resolve)=>{
             const layer = new RasterTileSetLayer(model, layerOptions);
             resolve(layer);

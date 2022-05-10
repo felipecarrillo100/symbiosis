@@ -20,6 +20,7 @@ import {WMTSTileSetModel} from "@luciad/ria/model/tileset/WMTSTileSetModel";
 import {FusionTileSetModel} from "@luciad/ria/model/tileset/FusionTileSetModel";
 import {OGC3DTilesModel} from "@luciad/ria/model/tileset/OGC3DTilesModel";
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer";
+import {DatabaseTilesetModel} from "../models/DatabaseTilesetModel";
 
 function PromiseToModel<mytype>(model:any) {
     return new Promise<mytype>((resolve)=>resolve(model));
@@ -60,6 +61,9 @@ class MapBuilder {
                 case LayerTypes.TMSLayer:
                     layerPromise = MapBuilder.buildTMSLayer(command);
                     break;
+                case LayerTypes.DatabaseRasterTileset:
+                    layerPromise = MapBuilder.buildDatabaseRasterTilesetLayer(command);
+                    break
                 case LayerTypes.BingMapsLayer:
                     layerPromise = MapBuilder.buildBingMapsLayer(command);
                     break;
@@ -175,6 +179,19 @@ class MapBuilder {
             modelPromise.then((model)=>{
                 delete command.parameters.reusableModel;
                 const layerPromise = LayerFactory.createTMSLayer(model, command.parameters.layer);
+                layerPromise.then(layer=>{
+                    resolve(layer);
+                })
+            })
+        }))
+    }
+
+    private static buildDatabaseRasterTilesetLayer(command: LayerConnectCommandsTypes) {
+        return new Promise<RasterTileSetLayer>((resolve => {
+            const modelPromise = command.parameters.reusableModel ? PromiseToModel<DatabaseTilesetModel>(command.parameters.reusableModel) : ModelFactory.createDatabaseTilesetModel(command.parameters.model);
+            modelPromise.then((model)=>{
+                delete command.parameters.reusableModel;
+                const layerPromise = LayerFactory.createDatabaseTilesetLayer(model, command.parameters.layer);
                 layerPromise.then(layer=>{
                     resolve(layer);
                 })

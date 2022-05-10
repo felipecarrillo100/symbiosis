@@ -25,7 +25,7 @@ import {LuciadMapPage} from "./pages/luciad/LuciadMapPage";
 import {ConnectWMSPage} from "./pages/luciad/connect/ConnectWMSPage";
 import {ConnectWFSPage} from "./pages/luciad/connect/ConnectWFSPage";
 import {ConnectTMSPage} from "./pages/luciad/connect/ConnectTMSPage";
-import {LayerControlPage} from "./pages/luciad/LayerControlPage";
+import {LayerControlPage} from "./pages/luciad/layercontrol/LayerControlPage";
 import {ApplicationCommandsTypes} from "./commands/ApplicationCommandsTypes";
 import {ConnectBingMapsPage} from "./pages/luciad/connect/ConnectBingMapsPage";
 import {OpenFilePage} from "./pages/luciad/OpenFilePage";
@@ -43,6 +43,7 @@ import {AlertButton} from "@ionic/core/components";
 import {ConnectLocalFilePage} from "./pages/luciad/connect/ConnectLocalFilePage";
 import {OpenFileFromFileSysyemPage} from "./pages/luciad/OpenFileFromFileSysyemPage";
 import {Capacitor} from "@capacitor/core";
+import {ConnectLocalDatabasePage} from "./pages/luciad/connect/ConnectLocalDatabasePage";
 
 setupIonicReact();
 
@@ -150,6 +151,9 @@ const App: React.FC = () => {
             </Route>
             <Route path="/page/connect/FileJson" exact={true}>
               <ConnectLocalFilePage />
+            </Route>
+            <Route path="/page/connect/Database" exact={true}>
+              <ConnectLocalDatabasePage />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>

@@ -205,6 +205,22 @@ export interface CreatLayerTMSCommand  extends CreateLayerBaseCommand  {
     }
 }
 
+export interface CreatDatabaseRasterTilesetCommand  extends CreateLayerBaseCommand  {
+    action: ApplicationCommands.CREATELAYER,
+    parameters: {
+        layerType: LayerTypes.DatabaseRasterTileset;
+        reusableModel?: Model;
+        model: {
+        };
+        layer: {
+            visible: boolean;
+            label: string;
+            id?: string;
+        };
+        autoZoom?: boolean
+    }
+}
+
 export interface CreatLayerOGC3DTilesCommand  extends CreateLayerBaseCommand  {
     action: ApplicationCommands.CREATELAYER,
     parameters: {
@@ -242,4 +258,4 @@ export interface CreatLayerBingMapsCommand  extends CreateLayerBaseCommand  {
 }
 
 export type LayerConnectCommandsTypes = CreatLayerWFSCommand | CreatLayerWMSCommand | CreatLayerTMSCommand | CreatRootLayerCommand | CreatLayerGroupCommand |
-    CreatLayerBingMapsCommand | CreatLayerWMTSCommand | CreatLayerLTSCommand | CreatLayerOGC3DTilesCommand | CreatLayerFeaturesFileCommand
+    CreatLayerBingMapsCommand | CreatLayerWMTSCommand | CreatLayerLTSCommand | CreatLayerOGC3DTilesCommand | CreatLayerFeaturesFileCommand | CreatDatabaseRasterTilesetCommand
