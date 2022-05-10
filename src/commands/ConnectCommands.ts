@@ -211,6 +211,7 @@ export interface CreatDatabaseRasterTilesetCommand  extends CreateLayerBaseComma
         layerType: LayerTypes.DatabaseRasterTileset;
         reusableModel?: Model;
         model: {
+            tableName: string;
         };
         layer: {
             visible: boolean;

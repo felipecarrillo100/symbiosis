@@ -3,7 +3,6 @@ import {FeatureLayer} from "@luciad/ria/view/feature/FeatureLayer";
 import {Controller} from "@luciad/ria/view/controller/Controller";
 import {EditController} from "@luciad/ria/view/controller/EditController";
 import {MemoryStore} from "@luciad/ria/model/store/MemoryStore";
-import {ScreenMessage} from "../../ScreenMessage";
 import {Map} from "@luciad/ria/view/Map";
 import CreateFeatureInLayerController from "../controllers/CreateFeatureInLayerController";
 import {LayerEditActions} from "../actions/LayerEditActions";
@@ -15,6 +14,7 @@ import {Feature} from "@luciad/ria/model/feature/Feature";
 import GeoTools from "../utils/GeoTools";
 import {LayerTypes} from "../layertypes/LayerTypes";
 import {CoordinateReference} from "@luciad/ria/reference/CoordinateReference";
+import {ScreenMessage} from "../../../screen/ScreenMessage";
 
 class EditSelectLayerTools {
 

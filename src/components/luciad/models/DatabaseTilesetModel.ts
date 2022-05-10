@@ -1,15 +1,15 @@
 import {RasterTileSetModel, RasterTileSetModelConstructorOptions} from "@luciad/ria/model/tileset/RasterTileSetModel";
-import {options} from "ionicons/icons";
 import {createBounds} from "@luciad/ria/shape/ShapeFactory";
 import {getReference} from "@luciad/ria/reference/ReferenceProvider";
-import {Bounds} from "@luciad/ria/shape/Bounds";
-import {CoordinateReference} from "@luciad/ria/reference/CoordinateReference";
 import {TileCoordinate} from "@luciad/ria/model/tileset/TileCoordinate";
 import {RasterDataType} from "@luciad/ria/model/tileset/RasterDataType";
 import {RasterSamplingMode} from "@luciad/ria/model/tileset/RasterSamplingMode";
+import {store} from "../../../reduxboilerplate/store";
+import {DBSQLiteValues} from "@capacitor-community/sqlite";
 
 
 interface ModelOptions {
+    tableName: string;
     tileHeight?: number;
     tileWidth?: number;
     levelCount?: number;
@@ -22,6 +22,7 @@ interface ModelOptions {
 
 class DatabaseTilesetModel extends RasterTileSetModel {
     private invertY: boolean;
+    private tableName: string;
 
     constructor(modelOptions: ModelOptions) {
         const REF_WEBMERCATOR = getReference("EPSG:3857");
@@ -40,6 +41,7 @@ class DatabaseTilesetModel extends RasterTileSetModel {
         }
         super(options);
         this.invertY = typeof modelOptions.invertY !== "undefined" ? modelOptions.invertY : true;
+        this.tableName = modelOptions.tableName;
     }
 
     private drawImageLocally(tile:TileCoordinate, tileCorrected: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void) {
@@ -76,12 +78,56 @@ class DatabaseTilesetModel extends RasterTileSetModel {
         });
     }
 
+    private drawImageDatabase(tile: TileCoordinate, tileCorrected: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void) {
+        return new Promise<boolean>((resolve, reject) => {
+            const databaseManager = store.getState().database.databaseManager
+            if (databaseManager && databaseManager.getDb()) {
+                const db = databaseManager.getDb();
+                if (db) {
+                    const sql = `SELECT hex(img) from ${this.tableName} WHERE x=? AND y=? AND z=?`;
+                    db.query(sql, [tileCorrected.x, tileCorrected.y, tileCorrected.level]).then((result:DBSQLiteValues)=>{
+                        // @ts-ignore
+                        const fromHexString = (hexString:string) => new Uint8Array(hexString.match(/(..?)/g).map(byte => parseInt(byte, 16)));
+                        if (result && result.values) {
+                            const uint8 = fromHexString(result.values[0]["hex(img)"]);
+                            const imgBlob = new Blob([uint8], {type: "octet/stream"})
+                            const url = URL.createObjectURL(imgBlob);
+                            const newImg = document.createElement('img');
+
+                            newImg.onload = function() {
+                                // no longer need to read the blob so it's revoked
+                                onSuccess(tile, newImg);
+                                resolve(true);
+                                URL.revokeObjectURL(url);
+                            };
+                            newImg.onerror = function () {
+                                reject();
+                            }
+                            newImg.src = url;
+                         }
+                    }).catch(()=>{
+                        reject();
+                    })
+                } else {
+                    reject();
+                }
+            } else {
+                reject();
+            }
+        })
+    }
+
     getImage(tile: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void, onError: (tile: TileCoordinate, error?: any) => void, abortSignal: AbortSignal | null): void {
         const tileCorrected = {...tile};
         const maxY = Math.pow(2, tile.level) - 1;
         const correctedY = this.invertY ? maxY - tile.y : tile.y;
         tileCorrected.y = correctedY;
-        this.drawImageLocally(tile, tileCorrected, onSuccess);
+        this.drawImageDatabase(tile, tileCorrected, onSuccess).then(()=>{
+            console.log("Success")
+        }).catch((err)=>{
+            this.drawImageLocally(tile, tileCorrected, onSuccess);
+        })
+
     }
 }
 

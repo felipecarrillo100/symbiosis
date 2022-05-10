@@ -145,7 +145,7 @@ class ModelFactory {
 
     static createDatabaseTilesetModel(modelOptions: any) {
         return new Promise<DatabaseTilesetModel>((resolve, reject) => {
-            const model = new DatabaseTilesetModel({});
+            const model = new DatabaseTilesetModel(modelOptions);
             if (model) {
                 resolve(model);
             } else {

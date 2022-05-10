@@ -22,10 +22,13 @@ import { useParams } from 'react-router';
 import {useRef, useState} from "react";
 import {AdvanceLayerTools} from "../../../components/luciad/layerutils/AdvanceLayerTools";
 import {TileManager} from "../../../utils/TileManager";
+import {DataBaseManager} from "../../../utils/DataBaseManager";
+import {DBSQLiteValues, SQLiteDBConnection} from "@capacitor-community/sqlite";
+import {ScreenMessage} from "../../../screen/ScreenMessage";
 
 interface StateProps {
-    treeNode: TreeNodeInterface | null;
     map: Map | null;
+    databaseManager: DataBaseManager | null;
 }
 
 
@@ -39,33 +42,104 @@ const LayerCapturePage: React.FC = () => {
         tableName: "",
         label: "",
     });
+    const domainIndex = useRef(0);
 
     const tileManager = useRef(null as TileManager | null);
 
-    const { treeNode, map} = useSelector<IAppState, StateProps>((state: IAppState) => {
+    const { databaseManager, map } = useSelector<IAppState, StateProps>((state: IAppState) => {
         return {
             treeNode: state.luciadMap.treeNode,
             map: state.luciadMap.map,
+            databaseManager: state.database.databaseManager,
         }
     });
 
-    const onSubmit = (event: any) => {
-        event.preventDefault();
-        event.stopPropagation();
 
-        if (tileManager.current) {
-            let timer = 0
-            tileManager.current.iterateTiles(5, (level: number,x: number,y: number) => {
-                const f = (t: number) => {
-                    setTimeout(()=>{
-                        console.log(`x: ${x} y: ${y} z:${level}  t:${t}`);
-                    }, t);
-                }
-                f(timer);
-                timer += 4;
-            });
+    const createTable = (db: SQLiteDBConnection | null, tableName: string, size: number) =>{
+        return new Promise<string | null>(resolve => {
+            const table = camelize(tableName);
+            const tileSetsTableName = "rasters"
+            if (db) {
+                const sqlDropIndexTable = `DROP TABLE IF EXISTS ${tileSetsTableName}`;
+                const sqlCreateIndexTable = `CREATE TABLE IF NOT EXISTS ${tileSetsTableName}
+    ( 
+        name TEXT PRIMARY KEY NOT NULL,
+        size INTEGER 
+    )
+`;
+                const sqlDropTable = `DROP TABLE IF EXISTS ${table};`;
+                const sqlCreateTable = `CREATE TABLE IF NOT EXISTS ${table}
+    (
+         x INTEGER NOT NULL,
+         y INTEGER NOT NULL,
+         z INTEGER NOT NULL,
+         img blob,
+         PRIMARY KEY (x, y, z)
+     );`;
+                db.executeSet([ /*{statement: sqlDropIndexTable, values: []},*/ {statement: sqlCreateIndexTable, values:[]},{statement: sqlDropTable, values:[]}, {statement: sqlCreateTable, values:[]}]).then((result=>{
+                    console.log(result);
+                    ScreenMessage.info("Table " + tableName + " was created");
+                    const sqlAddEntry = "INSERT OR REPLACE INTO " + tileSetsTableName + " (name, size) VALUES( ?,? )";
+                    db.query(sqlAddEntry, [table, size]).then((result)=>{
+                        resolve(table);
+                    }).catch((err)=>{
+                       resolve(null);
+                    })
+                })).catch((err)=>{
+                    console.log(err);
+                    resolve(null);
+                })
+            }
+        })
+    }
+
+    const requestTile = (url: string) => {
+        return new Promise<ArrayBuffer>((resolve, reject)=>{
+            fetch(url)
+                .then(function(response) {
+                    if (response.status === 200) {
+                        response.arrayBuffer().then((data: ArrayBuffer) => {
+                            resolve(data);
+                        })
+                    } else {
+                        reject();
+                    }
+                }).catch((err=>{
+                    reject();
+            }))
+        })
+    }
+
+    const addTileToTable = (table: string, x: number, y: number, z: number) => {
+        // @ts-ignore
+        const buf2hex = (buffer: ArrayBuffer) =>  [...new Uint8Array(buffer)].map(x => x.toString(16).padStart(2, '0')).join('');
+
+        if (subdomains.length>0) {
+            domainIndex.current = (domainIndex.current + 1) % subdomains.length;
         }
-        history.push("/page/Map");
+      let urlRequest = url;
+        urlRequest = urlRequest.replace("{x}", x.toString());
+        urlRequest = urlRequest.replace("{-y}", y.toString());
+        urlRequest = urlRequest.replace("{y}", y.toString());
+        urlRequest = urlRequest.replace("{z}", z.toString());
+        urlRequest = urlRequest.replace("{s}", subdomains[domainIndex.current]);
+        requestTile(urlRequest).then((data)=>{
+            if (databaseManager && databaseManager.getDb()) {
+                const db = databaseManager.getDb();
+                if (db ) {
+                    console.log(urlRequest);
+                    const sql = "INSERT OR REPLACE INTO " + table + " (x, y, z, img) VALUES( ?,?,?, X'"+ buf2hex(data) +"')" ;
+                    db.query(sql, [x,y,z]).then((result: DBSQLiteValues)=>{
+                        console.log(result);
+                    }).catch(()=>{
+                        // resolve(null);
+                    });
+                }
+            }
+        }).catch(()=>{
+
+        })
+
     }
 
     const onCancel = (event: any) => {
@@ -108,6 +182,31 @@ const LayerCapturePage: React.FC = () => {
             const format = layer.restoreCommand.parameters.model.format;
             url = layer.restoreCommand.parameters.model.url+`?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&LAYER=${layername}&STYLE=default&FORMAT=${format}&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={z}&TILEROW={-y}&TILECOL={x}`;
         }
+    }
+
+    const onSubmit = (event: any) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (tileManager.current && databaseManager && databaseManager.getDb()) {
+            const db = databaseManager.getDb();
+            createTable(db, inputs.tableName, totalTiles).then((realTableName)=>{
+                if (realTableName) {
+                    let timer = 0
+                    tileManager.current?.iterateTiles(5, (level: number,x: number,y: number) => {
+                        const f = (t: number) => {
+                            setTimeout(()=>{
+                                // console.log(`x: ${x} y: ${y} z:${level}  t:${t}`);
+                                addTileToTable(realTableName, x,y,level);
+                            }, t);
+                        }
+                        f(timer);
+                        timer += 4;
+                    });
+                }
+            });
+        }
+        history.push("/page/Map");
     }
 
     return (

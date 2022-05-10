@@ -45,6 +45,7 @@ import {OpenFileFromFileSysyemPage} from "./pages/luciad/OpenFileFromFileSysyemP
 import {Capacitor} from "@capacitor/core";
 import {ConnectLocalDatabasePage} from "./pages/luciad/connect/ConnectLocalDatabasePage";
 import {LayerCapturePage} from "./pages/luciad/layercontrol/LayerCapturePage";
+import {DBConnectPage} from "./pages/luciad/DBConnectPage";
 
 setupIonicReact();
 
@@ -158,6 +159,9 @@ const App: React.FC = () => {
             </Route>
             <Route path="/page/captureLayer/:layerId/:x1/:y1/:x2/:y2" exact={true}>
               <LayerCapturePage />
+            </Route>
+            <Route path="/page/database/connect" exact={true}>
+              <DBConnectPage />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>

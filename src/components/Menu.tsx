@@ -137,7 +137,7 @@ const ConnectSubmenu: AppSubMenu = {
             mdIcon: analyticsSharp
         },
         {
-            title: 'Database',
+            title: 'Database tileset',
             url: '/page/connect/Database',
             iosIcon: imageOutline,
             mdIcon: imageSharp
@@ -162,6 +162,12 @@ const MapRestoreItems: AppPage[] = [
     {
         title: 'New workspace',
         url: '/page/New',
+        iosIcon: documentOutline,
+        mdIcon: documentSharp,
+    },
+    {
+        title: 'Database',
+        url: '/page/database/connect',
         iosIcon: documentOutline,
         mdIcon: documentSharp,
     },

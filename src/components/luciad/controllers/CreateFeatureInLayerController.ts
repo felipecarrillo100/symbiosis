@@ -5,8 +5,8 @@ import { Controller } from "@luciad/ria/view/controller/Controller";
 import { Layer } from "@luciad/ria/view/Layer";
 import { Map } from "@luciad/ria/view/Map";
 import { GeoCanvas } from "@luciad/ria/view/style/GeoCanvas";
-import {ScreenMessage} from "../../ScreenMessage";
 import GeoTools from "../utils/GeoTools";
+import {ScreenMessage} from "../../../screen/ScreenMessage";
 
 
 type CreateFeatureInLayerOnComplete = (feature: Feature, layer?: Layer) => any;
