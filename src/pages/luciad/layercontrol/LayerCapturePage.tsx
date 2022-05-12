@@ -31,6 +31,16 @@ interface StateProps {
     databaseManager: DataBaseManager | null;
 }
 
+interface RaterTableEntry {
+    name: string;
+    title:string;
+    description: string;
+    size: number;
+    minLevel: number;
+    maxLevel: number;
+    bounds: number[];
+}
+
 
 const LayerCapturePage: React.FC = () => {
     const history = useHistory();
@@ -56,15 +66,17 @@ const LayerCapturePage: React.FC = () => {
     });
 
 
-    const createTable = (db: SQLiteDBConnection | null, tableName: string, size: number, minLevel: number, maxLevel: number, bounds: number[]) =>{
+    const createTable = (db: SQLiteDBConnection | null, tableEntry: RaterTableEntry) =>{
         return new Promise<string | null>(resolve => {
-            const table = camelize(tableName);
+            const table = camelize(tableEntry.name);
             const tileSetsTableName = "rasters"
             if (db) {
                 const sqlDropIndexTable = `DROP TABLE IF EXISTS ${tileSetsTableName}`;
                 const sqlCreateIndexTable = `CREATE TABLE IF NOT EXISTS ${tileSetsTableName}
     ( 
         name TEXT PRIMARY KEY NOT NULL,
+        title TEXT,
+        description TEXT,
         size INTEGER,
         minLevel INTEGER,
         maxLevel INTEGER,
@@ -83,17 +95,25 @@ const LayerCapturePage: React.FC = () => {
          img blob,
          PRIMARY KEY (x, y, z)
      );`;
-                db.executeSet([ /*{statement: sqlDropIndexTable, values: []},*/ {statement: sqlCreateIndexTable, values:[]},{statement: sqlDropTable, values:[]}, {statement: sqlCreateTable, values:[]}]).then((result=>{
+                db.executeSet([
+                    /* {statement: sqlDropIndexTable, values: []},*/
+                    {statement: sqlCreateIndexTable, values:[]},
+                    {statement: sqlDropTable, values:[]},
+                    {statement: sqlCreateTable, values:[]}
+                ]).then((result=>{
                     console.log(result);
-                    ScreenMessage.info("Table " + tableName + " was created");
-                    const sqlAddEntry = "INSERT OR REPLACE INTO " + tileSetsTableName + " (name, size, minLevel, maxLevel, boundsX1, boundsY1, boundsX2, boundsY2) VALUES( ?,?,?,?, ?,?,?,? )";
-                    db.query(sqlAddEntry, [table, size, minLevel, maxLevel, ...bounds]).then((result)=>{
+                    ScreenMessage.info("Table " + tableEntry.name + " was created");
+                    const sqlAddEntry = "INSERT OR REPLACE INTO " + tileSetsTableName +
+                        " (name, title, description, size, minLevel, maxLevel, boundsX1, boundsY1, boundsX2, boundsY2) VALUES( ?,?,?,?,?,?, ?,?,?,? )";
+                    const sqlValues = [tableEntry.name, tableEntry.title, tableEntry.description, tableEntry.size, tableEntry.minLevel, tableEntry.maxLevel, ...tableEntry.bounds];
+                    db.query(sqlAddEntry, sqlValues).then((result)=>{
                         resolve(table);
                     }).catch((err)=>{
-                       resolve(null);
+                        ScreenMessage.error("Failed to append table " + tableEntry.name + " to available Raster sets.");
+                        resolve(null);
                     })
                 })).catch((err)=>{
-                    console.log(err);
+                    ScreenMessage.error("Failed to create table " + tableEntry.name + ".");
                     resolve(null);
                 })
             }
@@ -201,24 +221,34 @@ const LayerCapturePage: React.FC = () => {
         event.preventDefault();
         event.stopPropagation();
 
-        if (tileManager.current && databaseManager && databaseManager.getDb()) {
-            const db = databaseManager.getDb();
-            createTable(db, inputs.tableName, totalTiles, minMax[0], minMax[1], bounds).then((realTableName)=>{
-                if (realTableName) {
-                    let timer = 0
-                    tileManager.current?.iterateTiles(5, (level: number,x: number,y: number) => {
-                        const f = (t: number) => {
-                            setTimeout(()=>{
-                                // console.log(`x: ${x} y: ${y} z:${level}  t:${t}`);
-                                addTileToTable(realTableName, x,y,level);
-                            }, t);
-                        }
-                        f(timer);
-                        timer += 4;
-                    });
-                }
-            });
+        if (tileManager.current) {
+            if (databaseManager && databaseManager.getDb()) {
+                const db = databaseManager.getDb();
+                const newTableEntry: RaterTableEntry = {name: inputs.tableName, title: inputs.label, description: "", size: totalTiles, minLevel: minMax[0], maxLevel:minMax[1], bounds};
+                createTable(db, newTableEntry).then((realTableName)=>{
+                    if (realTableName) {
+                        let timer = 0
+                        tileManager.current?.iterateTiles(5, (level: number,x: number,y: number) => {
+                            const f = (t: number) => {
+                                setTimeout(()=>{
+                                    // console.log(`x: ${x} y: ${y} z:${level}  t:${t}`);
+                                    addTileToTable(realTableName, x,y,level);
+                                }, t);
+                            }
+                            f(timer);
+                            timer += 4;
+                        }, () =>{
+                            ScreenMessage.info("Download completed");
+                        });
+                    }
+                });
+            } else {
+                ScreenMessage.warning("Connect to a database first");
+            }
+        } else {
+            ScreenMessage.warning("No tilemanager created")
         }
+
         history.push("/page/Map");
     }
 
@@ -282,6 +312,10 @@ const LayerCapturePage: React.FC = () => {
                     <IonItem>
                         <IonLabel position="floating">Table name</IonLabel>
                         <IonInput value={inputs.tableName} onIonChange={editInput} name="tableName"/>
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Label</IonLabel>
+                        <IonInput value={inputs.label} onIonChange={editInput} name="label"/>
                     </IonItem>
                     <IonRow>
                         <IonCol>

@@ -184,7 +184,7 @@ class TileManager {
         }
     }
 
-    iterateTiles(level: number, callBack: (level: number, x: number, y: number) => void) {
+    iterateTiles(level: number, onProcessTile: (level: number, x: number, y: number) => void, onCompleted?:() => void) {
         const result = this.getTileRange(level);
         const keys = Object.keys(result.tileset);
         for (const key of keys) {
@@ -192,12 +192,13 @@ class TileManager {
             for (let x=tileLevel.x1; x<=tileLevel.x2; ++x) {
                 for (let y=tileLevel.y1; y<=tileLevel.y2; ++y){
                     const level = Number(key)
-                    if (typeof callBack === "function") {
-                        callBack(level, x, y);
+                    if (typeof onProcessTile === "function") {
+                        onProcessTile(level, x, y);
                     }
                 }
             }
         }
+        if (typeof onCompleted === "function") onCompleted();
     }
 
     private static convertBoundsMetersToBoundsLonLat(boundsMeters: [number, number, number, number]) {

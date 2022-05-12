@@ -44,12 +44,12 @@ class DatabaseTilesetModel extends RasterTileSetModel {
         this.tableName = modelOptions.tableName;
     }
 
-    private drawImageLocally(tile:TileCoordinate, tileCorrected: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void) {
+    private renderImageInCanvas(tile:TileCoordinate, tileCorrected: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void) {
         const canvas = document.createElement("canvas");
         canvas.width = 256;
         canvas.height = 256;
         const ctx = canvas.getContext("2d");
-        if (ctx) {
+    /*    if (ctx) {
             ctx.beginPath();
             ctx.lineWidth = 6;
             ctx.strokeStyle = "red";
@@ -60,7 +60,7 @@ class DatabaseTilesetModel extends RasterTileSetModel {
 
             const text = `x=${tileCorrected.x} y=${tileCorrected.y} level=${tileCorrected.level}   `
             ctx.fillText(text,128, 64);
-        }
+        } */
 
         canvas.toBlob(function(blob) {
             if (blob) {
@@ -78,7 +78,7 @@ class DatabaseTilesetModel extends RasterTileSetModel {
         });
     }
 
-    private drawImageDatabase(tile: TileCoordinate, tileCorrected: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void) {
+    private getImageFromDatabase(tile: TileCoordinate, tileCorrected: TileCoordinate, onSuccess: (tile: TileCoordinate, image: HTMLImageElement) => void) {
         return new Promise<boolean>((resolve, reject) => {
             const databaseManager = store.getState().database.databaseManager
             if (databaseManager && databaseManager.getDb()) {
@@ -122,10 +122,10 @@ class DatabaseTilesetModel extends RasterTileSetModel {
         const maxY = Math.pow(2, tile.level) - 1;
         const correctedY = this.invertY ? maxY - tile.y : tile.y;
         tileCorrected.y = correctedY;
-        this.drawImageDatabase(tile, tileCorrected, onSuccess).then(()=>{
+        this.getImageFromDatabase(tile, tileCorrected, onSuccess).then(()=>{
             console.log("Success")
         }).catch((err)=>{
-            this.drawImageLocally(tile, tileCorrected, onSuccess);
+            this.renderImageInCanvas(tile, tileCorrected, onSuccess);
         })
 
     }

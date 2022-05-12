@@ -21,21 +21,36 @@ import {SetAppCommand} from "../../../reduxboilerplate/command/actions";
 import {useHistory} from "react-router";
 import {IAppState} from "../../../reduxboilerplate/store";
 import {DataBaseManager} from "../../../utils/DataBaseManager";
+import {ScreenMessage} from "../../../screen/ScreenMessage";
 
 interface StateProps {
     databaseManager: DataBaseManager | null;
 }
-
+interface DatabaseRasterTableStructure {
+    name: string;
+    title: string;
+    description: string;
+    size: number
+    maxLevel: number
+    minLevel: number;
+    boundsX1: number;
+    boundsX2: number;
+    boundsY1: number;
+    boundsY2: number;
+}
 const ConnectLocalDatabasePage: React.FC = () => {
     const dispatch = useDispatch();
     const history = useHistory();
 
     const [inputs, setInputs] = useState({
+        bounds: [] as number[],
+        minLevel: 0,
+        maxLevel: 0,
         label: "Database Raster Layer",
         layer: ""
     });
 
-    const [layers, setLayers] = useState([] as {name: string, size: number}[]);
+    const [layers, setLayers] = useState([] as DatabaseRasterTableStructure[]);
 
     const { databaseManager } = useSelector<IAppState, StateProps>((state: IAppState) => {
         return {
@@ -48,9 +63,21 @@ const ConnectLocalDatabasePage: React.FC = () => {
     const editInput = (event: any) => {
         const {name, value} = event.target;
         const newInputs = {...inputs};
-        // @ts-ignore
-        newInputs[name] = value;
-        setInputs(newInputs);
+
+        if (name==="layer") {
+           newInputs.layer = value;
+           const fLayer= layers.find(l=>l.name === newInputs.layer);
+           if (fLayer) {
+               newInputs.minLevel = fLayer.minLevel;
+               newInputs.maxLevel = fLayer.maxLevel;
+               newInputs.bounds = [fLayer.boundsX1, fLayer.boundsY1, fLayer.boundsX2, fLayer.boundsY2]
+           }
+           setInputs(newInputs);
+        } else {
+            // @ts-ignore
+            newInputs[name] = value;
+            setInputs(newInputs);
+        }
     }
 
 
@@ -64,7 +91,12 @@ const ConnectLocalDatabasePage: React.FC = () => {
             parameters: {
                 layerType: LayerTypes.DatabaseRasterTileset,
                 model: {
-                    tableName: inputs.layer
+                    tableName: inputs.layer,
+                    levelCount: inputs.maxLevel,
+                    dataBounds: {
+                        reference: "EPSG:3857",
+                        coordinates: inputs.bounds
+                    }
                 },
                 layer: {
                     label: inputs.label,
@@ -86,15 +118,23 @@ const ConnectLocalDatabasePage: React.FC = () => {
                 db.query(sql, []).then(result=>{
                     if (result && result.values && result.values.length>0) {
                        setLayers(result.values);
-                       setInputs({...inputs, layer: result.values[0].name})
+                        const fLayer: DatabaseRasterTableStructure = result.values[0];
+                        setInputs({
+                            ...inputs, layer: fLayer.name,
+                            minLevel: fLayer.minLevel, maxLevel: fLayer.maxLevel,
+                            bounds: [fLayer.boundsX1, fLayer.boundsY1, fLayer.boundsX2, fLayer.boundsY2]
+                        });
                     }
                 })
             }
+        } else {
+            ScreenMessage.warning("Connect to a database first");
         }
     }
     const renderLayers = layers.map((l)=>(
         <IonSelectOption value={l.name} key={l.name}>{l.name}</IonSelectOption>
     ));
+
 
     return (
         <IonPage>
@@ -125,14 +165,21 @@ const ConnectLocalDatabasePage: React.FC = () => {
                         </IonCol>
                     </IonRow>
                     <IonItem>
-                        <IonLabel position="floating">Label</IonLabel>
-                        <IonInput value={inputs.label} placeholder="Enter name for the layer" onIonChange={editInput} name="label"/>
-                    </IonItem>
-
-                    <IonItem>
                         <IonSelect value={inputs.layer} okText="OK" cancelText="Cancel" onIonChange={editInput} name="layer">
                             {renderLayers}
                         </IonSelect>
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Bounds</IonLabel>
+                        <IonInput value={`[${inputs.bounds.join(", ")}]` } placeholder="Bounding box" readonly/>
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Levels</IonLabel>
+                        <IonInput value={"[" + inputs.minLevel + ", " + inputs.maxLevel+ "]" } placeholder="Levels range" readonly/>
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Label</IonLabel>
+                        <IonInput value={inputs.label} placeholder="Enter name for the layer" onIonChange={editInput} name="label"/>
                     </IonItem>
 
 

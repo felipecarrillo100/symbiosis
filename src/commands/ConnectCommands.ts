@@ -212,6 +212,8 @@ export interface CreatDatabaseRasterTilesetCommand  extends CreateLayerBaseComma
         reusableModel?: Model;
         model: {
             tableName: string;
+            levelCount: number;
+            dataBounds: BoundsObject;
         };
         layer: {
             visible: boolean;
