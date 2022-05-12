@@ -56,7 +56,7 @@ const LayerCapturePage: React.FC = () => {
     });
 
 
-    const createTable = (db: SQLiteDBConnection | null, tableName: string, size: number) =>{
+    const createTable = (db: SQLiteDBConnection | null, tableName: string, size: number, minLevel: number, maxLevel: number, bounds: number[]) =>{
         return new Promise<string | null>(resolve => {
             const table = camelize(tableName);
             const tileSetsTableName = "rasters"
@@ -68,7 +68,10 @@ const LayerCapturePage: React.FC = () => {
         size INTEGER,
         minLevel INTEGER,
         maxLevel INTEGER,
-        bounds TEXT
+        boundsX1 REAL,
+        boundsY1 REAL,
+        boundsX2 REAL,
+        boundsY2 REAL 
     )
 `;
                 const sqlDropTable = `DROP TABLE IF EXISTS ${table};`;
@@ -83,8 +86,8 @@ const LayerCapturePage: React.FC = () => {
                 db.executeSet([ /*{statement: sqlDropIndexTable, values: []},*/ {statement: sqlCreateIndexTable, values:[]},{statement: sqlDropTable, values:[]}, {statement: sqlCreateTable, values:[]}]).then((result=>{
                     console.log(result);
                     ScreenMessage.info("Table " + tableName + " was created");
-                    const sqlAddEntry = "INSERT OR REPLACE INTO " + tileSetsTableName + " (name, size) VALUES( ?,? )";
-                    db.query(sqlAddEntry, [table, size]).then((result)=>{
+                    const sqlAddEntry = "INSERT OR REPLACE INTO " + tileSetsTableName + " (name, size, minLevel, maxLevel, boundsX1, boundsY1, boundsX2, boundsY2) VALUES( ?,?,?,?, ?,?,?,? )";
+                    db.query(sqlAddEntry, [table, size, minLevel, maxLevel, ...bounds]).then((result)=>{
                         resolve(table);
                     }).catch((err)=>{
                        resolve(null);
@@ -200,7 +203,7 @@ const LayerCapturePage: React.FC = () => {
 
         if (tileManager.current && databaseManager && databaseManager.getDb()) {
             const db = databaseManager.getDb();
-            createTable(db, inputs.tableName, totalTiles).then((realTableName)=>{
+            createTable(db, inputs.tableName, totalTiles, minMax[0], minMax[1], bounds).then((realTableName)=>{
                 if (realTableName) {
                     let timer = 0
                     tileManager.current?.iterateTiles(5, (level: number,x: number,y: number) => {
