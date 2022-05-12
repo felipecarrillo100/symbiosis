@@ -26,6 +26,10 @@ import {WMSCapabilities, WMSCapabilitiesOperation} from "@luciad/ria/model/capab
 import {WMSCapabilitiesLayer} from "@luciad/ria/model/capabilities/WMSCapabilitiesLayer";
 import {isArray} from "util";
 import {useHistory} from "react-router";
+import {ScreenMessage} from "../../../screen/ScreenMessage";
+import {getReference} from "@luciad/ria/reference/ReferenceProvider";
+import {createTransformation} from "@luciad/ria/transformation/TransformationFactory";
+import {CoordinateReference} from "@luciad/ria/reference/CoordinateReference";
 
 
 const ConnectWMSPage: React.FC = () => {
@@ -106,11 +110,13 @@ const ConnectWMSPage: React.FC = () => {
 
         if (inputs.targetLayers.length>0) {
             const layer = layers.find(l=>l.name === inputs.targetLayers[0]);
+            const selectedLayers = layers.filter((l)=> inputs.targetLayers.findIndex(ll=>ll===l.name) > -1);
+            const unionBounds = simplifyBounds(selectedLayers, inputs.projection);
             if (layer) {
-                const referenceText = layer.supportedReferences;
                 const command = CreateCommand({
                     action: ApplicationCommands.CREATELAYER,
                     parameters: {
+                        fitBounds: unionBounds,
                         layerType: LayerTypes.WMSLayer,
                         model: {
                             getMapRoot: inputs.url,
@@ -156,6 +162,45 @@ const ConnectWMSPage: React.FC = () => {
             return "EPSG:3857";
         return projections[0];
     }
+
+    const simplifyBounds = (layers:WMSCapabilitiesLayer[], projection: string) => {
+        let resultingBounds;
+        try {
+            for (const layer of layers) {
+                // const bounds = layer.getBounds(ReferenceProvider.getReference("CRS:84"));
+                // const bounds = layer.getBounds(ReferenceProvider.getReference("EPSG:4326"));
+                const bounds = forceBoundsToCRS84(layer, projection);
+                if (typeof resultingBounds === "undefined"){
+                    if (bounds) {
+                        resultingBounds = bounds.copy();
+                    }
+                } else {
+                    if (bounds) {
+                        resultingBounds.setTo2DUnion(bounds);
+                    }
+                }
+            }
+            const b = resultingBounds as any;
+            return {reference:b.reference.identifier, coordinates:b.coordinates};
+        } catch (error) {
+            ScreenMessage.error("Missing bounds in references: CRS84 & " + projection);
+            throw error;
+        }
+    }
+
+    const forceBoundsToCRS84 = (layer:WMSCapabilitiesLayer, projection: string) => {
+        try {
+            const bounds = layer.getBounds(getReference("EPSG:4326"));
+            return bounds;
+        } catch (err) {
+            const boundsNative = layer.getBounds(getReference(projection));
+            const WGS84 = getReference("EPSG:4326");
+            const toWgs84 = createTransformation(boundsNative.reference as CoordinateReference, WGS84);
+            const crs84Bounds = toWgs84.transformBounds(boundsNative);
+            return crs84Bounds
+        }
+    }
+
 
     return (
         <IonPage>

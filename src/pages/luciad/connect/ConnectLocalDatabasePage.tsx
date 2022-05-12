@@ -22,6 +22,10 @@ import {useHistory} from "react-router";
 import {IAppState} from "../../../reduxboilerplate/store";
 import {DataBaseManager} from "../../../utils/DataBaseManager";
 import {ScreenMessage} from "../../../screen/ScreenMessage";
+import {WMSCapabilitiesLayer} from "@luciad/ria/model/capabilities/WMSCapabilitiesLayer";
+import {getReference} from "@luciad/ria/reference/ReferenceProvider";
+import {createTransformation} from "@luciad/ria/transformation/TransformationFactory";
+import {CoordinateReference} from "@luciad/ria/reference/CoordinateReference";
 
 interface StateProps {
     databaseManager: DataBaseManager | null;
@@ -94,15 +98,19 @@ const ConnectLocalDatabasePage: React.FC = () => {
                     tableName: inputs.layer,
                     levelCount: inputs.maxLevel,
                     dataBounds: {
-                        reference: "EPSG:3857",
-                        coordinates: inputs.bounds
+                        reference: "CRS:84",
+                        coordinates: [inputs.bounds[0], inputs.bounds[2]-inputs.bounds[0], inputs.bounds[1], inputs.bounds[3]-inputs.bounds[1] ],
                     }
                 },
                 layer: {
                     label: inputs.label,
                     visible: true,
                 },
-                autoZoom: true
+                autoZoom: true,
+                fitBounds: {
+                    reference: "CRS:84",
+                    coordinates: [inputs.bounds[0], inputs.bounds[2]-inputs.bounds[0], inputs.bounds[1], inputs.bounds[3]-inputs.bounds[1] ],
+                }
             }
         });
         dispatch(SetAppCommand(command));
@@ -134,7 +142,6 @@ const ConnectLocalDatabasePage: React.FC = () => {
     const renderLayers = layers.map((l)=>(
         <IonSelectOption value={l.name} key={l.name}>{l.name}</IonSelectOption>
     ));
-
 
     return (
         <IonPage>

@@ -78,9 +78,9 @@ class AdvanceLayerTools {
                             if (workingSet.bounds !== null) {
                                 callback(workingSet.bounds);
                             } else {
-                                if (layer.restoreCommand && layer.restoreCommand.fitBounds) {
-                                    const ref = getReference(layer.restoreCommand.fitBounds.reference);
-                                    const coordinates = layer.restoreCommand.fitBounds.coordinates;
+                                if (layer.restoreCommand && layer.restoreCommand.parameters.fitBounds) {
+                                    const ref = getReference(layer.restoreCommand.parameters.fitBounds.reference);
+                                    const coordinates = layer.restoreCommand.parameters.fitBounds.coordinates;
                                     callback(createBounds(ref, coordinates));
                                 } else {
                                     const expectedBound = featureLayer.bounds;
@@ -102,9 +102,9 @@ class AdvanceLayerTools {
                         if (workingSet.bounds !== null) {
                             callback(workingSet.bounds);
                         } else {
-                            if (layer.restoreCommand && layer.restoreCommand.fitBounds) {
-                                const ref = getReference(layer.restoreCommand.fitBounds.reference);
-                                const coordinates = layer.restoreCommand.fitBounds.coordinates;
+                            if (layer.restoreCommand && layer.restoreCommand.parameters.fitBounds) {
+                                const ref = getReference(layer.restoreCommand.parameters.fitBounds.reference);
+                                const coordinates = layer.restoreCommand.parameters.fitBounds.coordinates;
                                 const fitBounds = createBounds(ref, coordinates);
                                 callback(fitBounds);
                             } else {
@@ -124,9 +124,9 @@ class AdvanceLayerTools {
                     }
                 } else if (node.visible) {
                     const layer = node as any;
-                    if (layer.restoreCommand && layer.restoreCommand.fitBounds) {
-                        const ref = getReference(layer.restoreCommand.fitBounds.reference);
-                        const coordinates = layer.restoreCommand.fitBounds.coordinates;
+                    if (layer.restoreCommand && layer.restoreCommand.parameters.fitBounds) {
+                        const ref = getReference(layer.restoreCommand.parameters.fitBounds.reference);
+                        const coordinates = layer.restoreCommand.parameters.fitBounds.coordinates;
                         const fitBounds = createBounds(ref, coordinates);
                         callback(fitBounds);
                     } else {

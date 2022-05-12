@@ -101,7 +101,8 @@ export  interface CreatLayerWFSCommand extends CreateLayerBaseCommand {
             id?: string;
             selectable?: boolean;
         },
-        autoZoom?: boolean
+        autoZoom?: boolean,
+        fitBounds?: BoundsObject
     }
 }
 
@@ -125,7 +126,8 @@ export interface CreatLayerWMSCommand extends CreateLayerBaseCommand {
             label: string;
             id?: string;
         };
-        autoZoom?: boolean
+        autoZoom?: boolean,
+        fitBounds?: BoundsObject
     }
 }
 
@@ -220,7 +222,8 @@ export interface CreatDatabaseRasterTilesetCommand  extends CreateLayerBaseComma
             label: string;
             id?: string;
         };
-        autoZoom?: boolean
+        autoZoom?: boolean,
+        fitBounds: BoundsObject
     }
 }
 

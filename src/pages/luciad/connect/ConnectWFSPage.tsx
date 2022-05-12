@@ -25,6 +25,8 @@ import {CreateCommand} from "../../../commands/CreateCommand";
 import {useDispatch} from "react-redux";
 import {SetAppCommand} from "../../../reduxboilerplate/command/actions";
 import {useHistory} from "react-router";
+import {getReference} from "@luciad/ria/reference/ReferenceProvider";
+import {BoundsObject} from "../../../commands/ConnectCommands";
 
 
 const ConnectWFSPage: React.FC = () => {
@@ -85,6 +87,7 @@ const ConnectWFSPage: React.FC = () => {
         const layer = layers.find(l=>l.name === inputs.layer);
 
         if (layer) {
+            const nBounds = normalizeBounds(layer)
             const referenceText = layer.defaultReference;
             const command = CreateCommand({
                 action: ApplicationCommands.CREATELAYER,
@@ -100,7 +103,8 @@ const ConnectWFSPage: React.FC = () => {
                         visible: true,
                         selectable: true
                     },
-                    autoZoom: true
+                    autoZoom: true,
+                    fitBounds: nBounds
                 }
             });
             dispatch(SetAppCommand(command));
@@ -122,6 +126,18 @@ const ConnectWFSPage: React.FC = () => {
         return outputFormats[0];
     }
 
+    const normalizeBounds = (layer:WFSCapabilitiesFeatureType) => {
+        const boundsArray = layer.getWGS84Bounds();
+        if (boundsArray.length>0) {
+            const bounds = boundsArray[0];
+            const b = [bounds.x, bounds.width, bounds.y, bounds.height];
+            // @ts-ignore
+            return {coordinates: b, reference:bounds.reference.identifier};
+        } else {
+            const b = [-180, 360, -90, 180];
+            return {coordinates: b, reference:"CRS:84"};
+        }
+    }
 
     return (
         <IonPage>
