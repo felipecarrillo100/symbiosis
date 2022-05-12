@@ -125,7 +125,8 @@ class ModelFactory {
     static createTMSModel(modelOptions: any) {
         return new Promise<UrlTileSetModel>((resolve, reject) => {
             const REF_WEBMERCATOR = getReference("EPSG:3857");
-            const bounds = createBounds(REF_WEBMERCATOR, [-20037508.34278924, 40075016.68557848, -20037508.3520, 40075016.7040]);
+            const bounds = createBounds(REF_WEBMERCATOR, [-20037508.34278924, 40075016.68557848, -20037508.352, 40075016.704]);
+
             const reference = REF_WEBMERCATOR;
             const model = new UrlTileSetModel({
                 baseURL: modelOptions.baseURL,

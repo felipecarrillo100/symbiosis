@@ -1,7 +1,6 @@
 import * as GeodesyFactory from "@luciad/ria/geodesy/GeodesyFactory";
 import { LineType } from "@luciad/ria/geodesy/LineType";
 import { GeoJsonCodec } from "@luciad/ria/model/codec/GeoJsonCodec";
-import * as ReferenceProvider from "@luciad/ria/reference/ReferenceProvider";
 import { Bounds } from "@luciad/ria/shape/Bounds";
 import { Point } from "@luciad/ria/shape/Point";
 import { Shape } from "@luciad/ria/shape/Shape";
@@ -9,8 +8,9 @@ import * as ShapeFactory from "@luciad/ria/shape/ShapeFactory";
 import * as TransformationFactory from "@luciad/ria/transformation/TransformationFactory";
 import { CoordinateReference } from "@luciad/ria/reference/CoordinateReference";
 import { Transformation } from "@luciad/ria/transformation/Transformation";
+import {getReference} from "@luciad/ria/reference/ReferenceProvider";
 
-const reference = ReferenceProvider.getReference("CRS:84");
+const reference = getReference("CRS:84");
 const GEODESY = GeodesyFactory.createSphericalGeodesy(reference);
 const geoJSONCodec = new GeoJsonCodec({generateIDs: true});
 
@@ -90,7 +90,7 @@ class GeoTools {
         targetProjection =  targetProjection ?  targetProjection : "EPSG:4326";
         targetProjection = targetProjection==="CRS:84" ? "EPSG:4326" : targetProjection;
         const sourceProjection = shape.reference?.name === "WGS_1984" && shape.reference.identifier.includes("CRS84") ? "EPSG:4326" : shape.reference?.identifier;
-        const targetReference = ReferenceProvider.getReference(targetProjection);
+        const targetReference = getReference(targetProjection);
         if ( sourceProjection === targetProjection) {
             const geometry = (geoJSONCodec as any).encodeShape(shape);
             const newShape = (geoJSONCodec as any).decodeGeometryObject(geometry, targetReference);
@@ -101,6 +101,21 @@ class GeoTools {
             const geometry = (geoJSONCodec as any).encodeShape(shape);
             const newGeometry = this.recursiveTransformation(geometry, shape.reference as CoordinateReference, transformer);
             const newShape = (geoJSONCodec as any).decodeGeometryObject(newGeometry, targetReference);
+            return newShape;
+        }
+    }
+
+    public reprojectBounds(shape: Bounds, targetProjection?: string) {
+        // When no targetProjection Specified then default to CRS:84 (EPSG:4326);
+        targetProjection =  targetProjection ?  targetProjection : "EPSG:4326";
+        targetProjection = targetProjection==="CRS:84" ? "EPSG:4326" : targetProjection;
+        const sourceProjection = shape.reference?.name === "WGS_1984" && shape.reference.identifier.includes("CRS84") ? "EPSG:4326" : shape.reference?.identifier;
+        const targetReference = getReference(targetProjection);
+        if ( sourceProjection === targetProjection) {
+            return shape;
+        } else {
+            const transformer = TransformationFactory.createTransformation(shape.reference  as CoordinateReference, targetReference);
+            const newShape = transformer.transformBounds(shape)
             return newShape;
         }
     }
@@ -123,14 +138,15 @@ class GeoTools {
         }
     }
 
-    public createBoundsFromAWGS84Bounds(west: number, east: number, south: number, noth: number) {
-        const bounds = [west, east-west, south, noth-south];
-        const WGS84 = ReferenceProvider.getReference("CRS:84");
+
+    public createBoundsFromAWGS84Bounds(cardinals: {west: number, east: number, south: number, north: number}) {
+        const bounds = [cardinals.west, cardinals.east-cardinals.west, cardinals.south, cardinals.north-cardinals.south];
+        const WGS84 = getReference("CRS:84");
         return ShapeFactory.createBounds(WGS84, bounds);
     }
 
     public getCRS84BoundingBox(shape: Shape) {
-        const WGS84 = ReferenceProvider.getReference("CRS:84");
+        const WGS84 = getReference("CRS:84");
         const bounds = shape.bounds;
         const toWgs84 = TransformationFactory.createTransformation(bounds?.reference as CoordinateReference, WGS84);
         const newbounds = toWgs84.transformBounds(bounds as Bounds);

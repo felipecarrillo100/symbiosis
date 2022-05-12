@@ -5,6 +5,7 @@ import {FeatureLayer} from "@luciad/ria/view/feature/FeatureLayer";
 import {LayerTreeNodeType} from "@luciad/ria/view/LayerTreeNodeType";
 import {getReference} from "@luciad/ria/reference/ReferenceProvider";
 import {createBounds} from "@luciad/ria/shape/ShapeFactory";
+import GeoTools from "../utils/GeoTools";
 
 class AdvanceLayerTools {
 
@@ -39,7 +40,10 @@ class AdvanceLayerTools {
     public static fitToLayer(map: Map, node: LayerTreeNode) {
         AdvanceLayerTools.getFitBounds(map, node, (fitBounds) => {
             if (fitBounds) {
-                map.mapNavigator.fit({bounds: fitBounds, animate: true});
+                setTimeout(()=>{
+                   // const crs84Bounds = GeoTools.reprojectBounds(fitBounds, "CRS:84");
+                    map.mapNavigator.fit({bounds: fitBounds, animate: true});
+                }, 10)
             }
         })
     }
