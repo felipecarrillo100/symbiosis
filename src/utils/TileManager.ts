@@ -191,14 +191,49 @@ class TileManager {
             const tileLevel = result.tileset[key];
             for (let x=tileLevel.x1; x<=tileLevel.x2; ++x) {
                 for (let y=tileLevel.y1; y<=tileLevel.y2; ++y){
-                    const level = Number(key)
+                    const levelZ = Number(key)
                     if (typeof onProcessTile === "function") {
-                        onProcessTile(level, x, y);
+                        onProcessTile(levelZ, x, y);
                     }
                 }
             }
         }
         if (typeof onCompleted === "function") onCompleted();
+    }
+
+    iterateTilesWithDelay(level: number, delay: number, onProcessTile: (level: number, x: number, y: number) => void, onCompleted?:() => void) {
+        const result = this.getTileRange(level);
+        const keys = Object.keys(result.tileset);
+        const keyLength = keys.length;
+        let keyIndex = 0;
+        let tileLevel = result.tileset[keys[keyIndex]];
+        let x = tileLevel.x1;
+        let y = tileLevel.y1;
+        function iterator() {
+            const levelZ = Number(keys[keyIndex]);
+            onProcessTile(levelZ, x, y);
+            ++y;
+            if (y > tileLevel.y2) {
+                ++x;
+                y = tileLevel.y1;
+                if (x > tileLevel.x2) {
+                    ++keyIndex;
+                    if (keyIndex < keyLength) {
+                        tileLevel = result.tileset[keys[keyIndex]];
+                        x = tileLevel.x1;
+                        y = tileLevel.y1;
+                    }
+                }
+            }
+            if (keyIndex < keyLength) {
+                setTimeout(()=>{
+                    iterator();
+                }, delay);
+            } else {
+                if (typeof onCompleted === "function") onCompleted();
+            }
+        }
+        iterator();
     }
 
     private static convertBoundsMetersToBoundsLonLat(boundsMeters: [number, number, number, number]) {

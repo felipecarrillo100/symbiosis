@@ -228,7 +228,7 @@ const LayerCapturePage: React.FC = () => {
                 createTable(db, newTableEntry).then((realTableName)=>{
                     if (realTableName) {
                         let timer = 0
-                        tileManager.current?.iterateTiles(5, (level: number,x: number,y: number) => {
+                     /*   tileManager.current?.iterateTiles(5, (level: number,x: number,y: number) => {
                             const f = (t: number) => {
                                 setTimeout(()=>{
                                     // console.log(`x: ${x} y: ${y} z:${level}  t:${t}`);
@@ -237,6 +237,13 @@ const LayerCapturePage: React.FC = () => {
                             }
                             f(timer);
                             timer += 4;
+                        }, () =>{
+                            ScreenMessage.info("Download completed");
+                        });*/
+
+                        tileManager.current?.iterateTilesWithDelay(5, 10,(level: number,x: number,y: number) => {
+                            addTileToTable(realTableName, x,y,level);
+                            // console.log(`x: ${x} y: ${y} z:${level} `);
                         }, () =>{
                             ScreenMessage.info("Download completed");
                         });
