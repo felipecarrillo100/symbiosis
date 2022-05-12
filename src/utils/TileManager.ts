@@ -1,3 +1,5 @@
+import {boolean, number} from "@luciad/ria/util/expression/ExpressionFactory";
+
 const WEB_MERCATOR_MIN_BOUNDS = -20037508.34;
 const WEB_MERCATOR_MAX_BOUNDS = 20037508.34;
 const WEB_MERCATOR_MIN_LATITUDE = -85.05112877980666;
@@ -60,7 +62,7 @@ class TileManager {
         const height = this.meters2.y - this.meters1.y;
 
         const size = TileManager.getMin(width, height);
-        this.result = TileManager.recomendZoomLevel(size);
+        this.result = TileManager.recommendZoomLevel(size);
     }
 
     public getBounds() {
@@ -71,13 +73,19 @@ class TileManager {
         const start = this.maxCount > this.result.z ? this.result.z : this.maxCount;
         const end = this.maxCount > this.result.z+levels ? this.result.z+levels : this.maxCount;
         const tileStructure = {
-            "tileset" : {} as any,
-            "totaltiles" : 0
+            tileset : {} as any,
+            totalTiles : 0,
+            minLevel: start,
+            maxLevel: end,
+            bounds: [] as number[]
         }
         for (let i=start; i<end; ++i) {
-            const tileRange = TileManager.getTileRange(this.meters1, this.meters2, i);
+            const tileRange = TileManager.getTileRangeInfoForLevel(this.meters1, this.meters2, i);
+            if (tileStructure.bounds.length === 0) {
+                tileStructure.bounds = tileRange.bounds;
+            }
             tileStructure.tileset[i] = tileRange;
-            tileStructure.totaltiles += tileRange.tiles;
+            tileStructure.totalTiles += tileRange.tiles;
         }
         return tileStructure;
     }
@@ -88,6 +96,7 @@ class TileManager {
     private static getMax(a: number, b: number) {
         if (a>b) return a; else return b;
     }
+
     private static degrees2meters(lon: number, lat: number): TMPoint {
         const x = lon * 20037508.34 / 180;
         const tan = Math.tan((90 + lat) * Math.PI / 360);
@@ -98,7 +107,17 @@ class TileManager {
         }
     }
 
-    private static recomendZoomLevel(size: number) {
+    private static meters2degrees(x: number, y:number) {
+        const lon = x *  180 / 20037508.34 ;
+        const lat = Math.atan(Math.exp(y * Math.PI / 20037508.34)) * 360 / Math.PI - 90;
+        return {
+            lon,
+            lat
+        }
+    }
+
+
+    private static recommendZoomLevel(size: number) {
         const min = WEB_MERCATOR_MIN_BOUNDS;
         const max = WEB_MERCATOR_MAX_BOUNDS;
         const widthTotal = max - min;
@@ -113,9 +132,9 @@ class TileManager {
             width = widthTotal / cols;
         }
         return {
-            "z" : n,
-            "tileSize": width,
-            "cols" : cols
+            z : n,
+            tileSize: width,
+            cols : cols
         }
     }
 
@@ -127,7 +146,7 @@ class TileManager {
         return x;
     }
 
-    private static getTileRange(point1: TMPoint, point2: TMPoint, level: number) {
+    private static getTileRangeInfoForLevel(point1: TMPoint, point2: TMPoint, level: number) {
         const min = WEB_MERCATOR_MIN_BOUNDS;
         const max = WEB_MERCATOR_MAX_BOUNDS;
 
@@ -142,21 +161,26 @@ class TileManager {
         minTileX = minTileX < 0 ? 0 : minTileX;
         minTileY = minTileY < 0 ? 0 : minTileY;
 
-        let maxTileX = Math.ceil(( point2["x"] - min) / tileSize);
-        let maxTileY = Math.ceil((max - point1["y"]) / tileSize);
+        let maxTileX = Math.floor(( point2["x"] - min) / tileSize);
+        let maxTileY = Math.floor((max - point1["y"]) / tileSize);
 
-        maxTileX = maxTileX > cols ? cols : maxTileX;
-        maxTileY = maxTileY > cols ? cols : maxTileY;
+        maxTileX = maxTileX >= cols ? cols-1 : maxTileX;
+        maxTileY = maxTileY >= cols ? cols-1 : maxTileY;
 
         let w = maxTileX - minTileX;
         let h = maxTileY - minTileY;
+        const boundsMeters: [number, number, number, number] = [
+            WEB_MERCATOR_MIN_BOUNDS + minTileX*tileSize , WEB_MERCATOR_MAX_BOUNDS - minTileY*tileSize,
+            WEB_MERCATOR_MIN_BOUNDS + (maxTileX*tileSize + tileSize) , WEB_MERCATOR_MAX_BOUNDS - (maxTileY * tileSize + tileSize)];
+        const bounds = TileManager.convertBoundsMetersToBoundsLonLat(boundsMeters)
 
         return {
-            "x1" : minTileX,
-            "y1" : minTileY,
-            "x2" : maxTileX,
-            "y2" : maxTileY,
-            "tiles" : w * h
+            x1 : minTileX,
+            y1 : minTileY,
+            x2 : maxTileX,
+            y2 : maxTileY,
+            tiles : w * h,
+            bounds
         }
     }
 
@@ -176,6 +200,18 @@ class TileManager {
         }
     }
 
+    private static convertBoundsMetersToBoundsLonLat(boundsMeters: [number, number, number, number]) {
+        const x1 = boundsMeters[0];
+        const y1 = boundsMeters[1];
+        const x2 = boundsMeters[2];
+        const y2 = boundsMeters[3];
+        const p1 = TileManager.meters2degrees(x1,y1);
+        const p2 = TileManager.meters2degrees(x2,y2);
+        return [
+            p1.lon, p2.lat,
+            p2.lon, p1.lat
+        ];
+    }
 }
 
 export {

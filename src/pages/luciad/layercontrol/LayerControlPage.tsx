@@ -125,8 +125,10 @@ const LayerControlPage: React.FC = () => {
         if (nodeElement && nodeElement.id && map) {
             const controller= new RectangleSelectController((shape)=>{
                 map.controller = DefaultMapController.getDefaultMapController();
+                const p1 = shape.getPoint(0);
+                const p2 = shape.getPoint(2)
                 const bounds = shape.bounds;
-                history.push(`/page/captureLayer/${nodeElement.id}/${bounds.x}/${bounds.y}/${bounds.x+bounds.width}/${bounds.y+bounds.height}`);
+                history.push(`/page/captureLayer/${nodeElement.id}/${p1.x}/${p1.y}/${p2.x}/${p2.y}`);
             });
             map.controller = controller;
             history.push('/page/Map');

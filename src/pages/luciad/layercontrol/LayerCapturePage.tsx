@@ -41,6 +41,7 @@ const LayerCapturePage: React.FC = () => {
     const [inputs, setInputs] = useState({
         tableName: "",
         label: "",
+        targetZoomLevels: 5
     });
     const domainIndex = useRef(0);
 
@@ -64,7 +65,10 @@ const LayerCapturePage: React.FC = () => {
                 const sqlCreateIndexTable = `CREATE TABLE IF NOT EXISTS ${tileSetsTableName}
     ( 
         name TEXT PRIMARY KEY NOT NULL,
-        size INTEGER 
+        size INTEGER,
+        minLevel INTEGER,
+        maxLevel INTEGER,
+        bounds TEXT
     )
 `;
                 const sqlDropTable = `DROP TABLE IF EXISTS ${table};`;
@@ -163,11 +167,17 @@ const LayerCapturePage: React.FC = () => {
 
     let levelCount = 22;
     let totalTiles = 0;
+    let bounds = [] as number[];
+    let calculatedZoomLevels = inputs.targetZoomLevels;
+    let minMax = [] as number [];
     if (layer) {
         levelCount = layer.model.levelCount;
         tileManager.current = new TileManager({p1: {lon:Number(x1),lat:Number(y1)}, p2: {lon:Number(x2),lat:Number(y2)}}, levelCount);
-        const result = tileManager.current.getTileRange(22);
-        totalTiles = result.totaltiles;
+        const result = tileManager.current.getTileRange(5);
+        totalTiles = result.totalTiles;
+        bounds = result.bounds;
+        calculatedZoomLevels = result.maxLevel - result.minLevel;
+        minMax = [result.minLevel, result.maxLevel];
 
         if (layer.restoreCommand.parameters.layer.label) {
             const tableName = camelize(layer.restoreCommand.parameters.layer.label);
@@ -238,15 +248,32 @@ const LayerCapturePage: React.FC = () => {
                         <IonInput value={url} readonly/>
                     </IonItem>
                     <IonItem>
-                        <IonLabel position="floating">Levels:</IonLabel>
+                        <IonLabel position="floating">Bounds:</IonLabel>
+                        <IonInput value={bounds.join(",")} readonly/>
+                    </IonItem>
+
+                    <IonItem>
+                        <IonLabel position="floating">Levels available at server:</IonLabel>
                         <IonInput value={levelCount} readonly/>
                     </IonItem>
                     <IonItem>
-                        <IonLabel position="floating">Subdomains:</IonLabel>
+                        <IonLabel position="floating">Requested zoom levels by client:</IonLabel>
+                        <IonInput value={inputs.targetZoomLevels} readonly/>
+                    </IonItem>
+                    {/*  <IonItem>
+                        <IonLabel position="floating">Calculated zoom levels:</IonLabel>
+                        <IonInput value={calculatedZoomLevels} readonly/>
+                    </IonItem> */}
+                    <IonItem>
+                        <IonLabel position="floating">Tile levels to retrieve:</IonLabel>
+                        <IonInput value={`[${minMax.join(", ")}]`} readonly/>
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Subdomains available:</IonLabel>
                         <IonInput value={`[${subdomains.join(", ")}]`} readonly/>
                     </IonItem>
                     <IonItem>
-                        <IonLabel position="floating">Total tiles</IonLabel>
+                        <IonLabel position="floating">Estimated Total tiles</IonLabel>
                         <IonInput value={totalTiles + " (approx. " + (totalTiles * 200 / 1024).toFixed(2) + " MBytes)"} readonly/>
                     </IonItem>
                     <IonItem>
