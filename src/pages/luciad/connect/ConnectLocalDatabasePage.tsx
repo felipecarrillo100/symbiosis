@@ -22,10 +22,6 @@ import {useHistory} from "react-router";
 import {IAppState} from "../../../reduxboilerplate/store";
 import {DataBaseManager} from "../../../utils/DataBaseManager";
 import {ScreenMessage} from "../../../screen/ScreenMessage";
-import {WMSCapabilitiesLayer} from "@luciad/ria/model/capabilities/WMSCapabilitiesLayer";
-import {getReference} from "@luciad/ria/reference/ReferenceProvider";
-import {createTransformation} from "@luciad/ria/transformation/TransformationFactory";
-import {CoordinateReference} from "@luciad/ria/reference/CoordinateReference";
 
 interface StateProps {
     databaseManager: DataBaseManager | null;

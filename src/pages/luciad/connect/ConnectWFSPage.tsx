@@ -25,9 +25,6 @@ import {CreateCommand} from "../../../commands/CreateCommand";
 import {useDispatch} from "react-redux";
 import {SetAppCommand} from "../../../reduxboilerplate/command/actions";
 import {useHistory} from "react-router";
-import {getReference} from "@luciad/ria/reference/ReferenceProvider";
-import {BoundsObject} from "../../../commands/ConnectCommands";
-
 
 const ConnectWFSPage: React.FC = () => {
     const dispatch = useDispatch();

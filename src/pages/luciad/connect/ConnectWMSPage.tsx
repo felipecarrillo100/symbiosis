@@ -24,7 +24,6 @@ import {useDispatch} from "react-redux";
 import {SetAppCommand} from "../../../reduxboilerplate/command/actions";
 import {WMSCapabilities, WMSCapabilitiesOperation} from "@luciad/ria/model/capabilities/WMSCapabilities";
 import {WMSCapabilitiesLayer} from "@luciad/ria/model/capabilities/WMSCapabilitiesLayer";
-import {isArray} from "util";
 import {useHistory} from "react-router";
 import {ScreenMessage} from "../../../screen/ScreenMessage";
 import {getReference} from "@luciad/ria/reference/ReferenceProvider";

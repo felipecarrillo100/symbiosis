@@ -1,20 +1,20 @@
 import {
     IonButton,
-    IonButtons,
+    IonButtons, IonCol,
     IonContent,
     IonHeader,
     IonInput,
     IonItem,
     IonLabel,
     IonMenuButton,
-    IonPage,
+    IonPage, IonRow,
     IonSelect,
     IonSelectOption,
     IonTitle,
     IonToolbar
 } from '@ionic/react';
 import '../../Page.scss';
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 import {ApplicationCommands} from "../../../commands/ApplicationCommands";
 import {LayerTypes} from "../../../components/luciad/layertypes/LayerTypes";
@@ -34,6 +34,25 @@ const ConnectBingMapsPage: React.FC = () => {
         label: "Satellite",
         layer: BingMapsImagerySet.AERIAL as BingMapsImagerySet,
     });
+
+    useEffect(()=>{
+        const token = localStorage.getItem('bingmapsToken');
+        if (token) {
+            setTimeout(()=>{
+                setInputs({...inputs, token});
+            }, 10)
+        }
+        return ()=>{}
+    }, []);
+
+    const saveToken = () => {
+        localStorage.setItem('bingmapsToken', inputs.token);
+    }
+
+    const loadToken = () => {
+        const token = localStorage.getItem('bingmapsToken');
+        if (token) setInputs({...inputs, token})
+    }
 
     const [bingmapSet] = useState([
         {
@@ -91,6 +110,8 @@ const ConnectBingMapsPage: React.FC = () => {
     ));
 
 
+    const token = inputs.token;
+    console.log("tokwn:" + token);
     return (
         <IonPage>
             <IonHeader>
@@ -110,10 +131,25 @@ const ConnectBingMapsPage: React.FC = () => {
                 </IonHeader>
                 <form className="ion-padding" onSubmit={onSubmit}>
                     <IonItem>
-                        <IonLabel position="floating">Endpoint URL</IonLabel>
-                        <IonInput value={inputs.token} placeholder="Enter a valid url" onIonChange={editInput}
-                                  name="token"/>
+                        <IonLabel position="floating">Bingmaps Token</IonLabel>
+                        <IonInput value={token} placeholder="Enter a valid token" onIonChange={editInput} name="token"/>
                     </IonItem>
+                    <IonRow>
+                        <IonCol>
+                            <div className="ion-float-end">
+                                <IonButtons>
+                                    <IonButton type="button" size="small" fill="solid" color="primary" expand="block"
+                                               onClick={loadToken}>
+                                        Load Token
+                                    </IonButton>
+                                    <IonButton type="button" size="small" fill="solid" color="primary" expand="block"
+                                               onClick={saveToken}>
+                                        Save token
+                                    </IonButton>
+                                </IonButtons>
+                            </div>
+                        </IonCol>
+                    </IonRow>
                     <IonItem>
                         <IonLabel position="floating">Select Format</IonLabel>
                         <IonSelect value={inputs.layer} okText="OK" cancelText="Cancel" onIonChange={editInput} name="layer">

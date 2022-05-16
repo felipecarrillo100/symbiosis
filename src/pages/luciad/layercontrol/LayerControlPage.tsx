@@ -28,7 +28,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {IAppState} from "../../../reduxboilerplate/store";
 import TreeNodeInterface from "../../../interfaces/TreeNodeInterface";
 import {Map} from "@luciad/ria/view/Map";
-import {settingsOutline, settingsSharp, trashOutline, trashSharp} from "ionicons/icons";
+import {settingsOutline, settingsSharp, trashOutline, trashSharp, warningOutline, warningSharp} from "ionicons/icons";
 import {AdvanceLayerTools} from "../../../components/luciad/layerutils/AdvanceLayerTools";
 import {useHistory} from "react-router";
 import {Layer} from "@luciad/ria/view/Layer";
@@ -249,9 +249,9 @@ const LayerControlPage: React.FC = () => {
         )}).reverse() :
         <IonList>
             <IonItem>
-                <IonAvatar slot="start" >
-                    <img src={"/assets/avatars/warning.png"} style={{borderRadius:0}} alt="Warning" />
-                </IonAvatar>
+
+                <IonIcon slot="start" ios={warningSharp} md={warningOutline}/>
+
                 <IonLabel>
                     <h2>The map is currently empty</h2>
                     <p>Use the Connect menu to add layers</p>
