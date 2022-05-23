@@ -228,24 +228,18 @@ const LayerCapturePage: React.FC = () => {
                 createTable(db, newTableEntry).then((realTableName)=>{
                     if (realTableName) {
                         let timer = 0
-                     /*   tileManager.current?.iterateTiles(5, (level: number,x: number,y: number) => {
-                            const f = (t: number) => {
-                                setTimeout(()=>{
-                                    // console.log(`x: ${x} y: ${y} z:${level}  t:${t}`);
-                                    addTileToTable(realTableName, x,y,level);
-                                }, t);
-                            }
-                            f(timer);
-                            timer += 4;
-                        }, () =>{
-                            ScreenMessage.info("Download completed");
-                        });*/
 
                         tileManager.current?.iterateTilesWithDelay(5, 10,(level: number,x: number,y: number) => {
                             addTileToTable(realTableName, x,y,level);
                             // console.log(`x: ${x} y: ${y} z:${level} `);
                         }, () =>{
                             ScreenMessage.info("Download completed");
+                        }, (counter, total) => {
+                            const ratio = counter/total * 100;
+                            const flag = Math.floor(total / 10);
+                            if (counter % flag === 0) {
+                                ScreenMessage.info("Percentage:" + ratio.toFixed(2) + "%" )
+                            }
                         });
                     }
                 });

@@ -26,7 +26,7 @@ interface TileManagerOptions {
 }
 
 class TileManager {
-    private result: { tileSize: number; z: number; cols: number };
+    private recommendedZoomDetails: { tileSize: number; z: number; cols: number };
     private bounds: TMBounds;
     private meters1: TMPoint;
     private meters2: TMPoint;
@@ -62,7 +62,7 @@ class TileManager {
         const height = this.meters2.y - this.meters1.y;
 
         const size = TileManager.getMin(width, height);
-        this.result = TileManager.recommendZoomLevel(size);
+        this.recommendedZoomDetails = TileManager.recommendZoomLevel(size);
     }
 
     public getBounds() {
@@ -70,20 +70,18 @@ class TileManager {
     }
 
     public getTileRange(levels: number) {
-        const start = this.maxCount > this.result.z ? this.result.z : this.maxCount;
-        const end = this.maxCount > this.result.z+levels ? this.result.z+levels : this.maxCount;
+        let start = this.maxCount > this.recommendedZoomDetails.z ? this.recommendedZoomDetails.z : this.maxCount;
+        if (start>0) --start;
+        const end = this.maxCount > this.recommendedZoomDetails.z+levels ? this.recommendedZoomDetails.z+levels : this.maxCount;
         const tileStructure = {
             tileset : {} as any,
             totalTiles : 0,
             minLevel: start,
             maxLevel: end,
-            bounds: [] as number[]
+            bounds: [this.bounds.p1.lon, this.bounds.p1.lat, this.bounds.p2.lon, this.bounds.p2.lat ]
         }
         for (let i=start; i<end; ++i) {
             const tileRange = TileManager.getTileRangeInfoForLevel(this.meters1, this.meters2, i);
-            if (tileStructure.bounds.length === 0) {
-                tileStructure.bounds = tileRange.bounds;
-            }
             tileStructure.tileset[i] = tileRange;
             tileStructure.totalTiles += tileRange.tiles;
         }
@@ -167,13 +165,14 @@ class TileManager {
         maxTileX = maxTileX >= cols ? cols-1 : maxTileX;
         maxTileY = maxTileY >= cols ? cols-1 : maxTileY;
 
-        let w = maxTileX - minTileX;
-        let h = maxTileY - minTileY;
+
         const boundsMeters: [number, number, number, number] = [
             WEB_MERCATOR_MIN_BOUNDS + minTileX*tileSize , WEB_MERCATOR_MAX_BOUNDS - minTileY*tileSize,
             WEB_MERCATOR_MIN_BOUNDS + (maxTileX*tileSize + tileSize) , WEB_MERCATOR_MAX_BOUNDS - (maxTileY * tileSize + tileSize)];
         const bounds = TileManager.convertBoundsMetersToBoundsLonLat(boundsMeters)
 
+        let w = maxTileX - minTileX + 1;
+        let h = maxTileY - minTileY + 1;
         return {
             x1 : minTileX,
             y1 : minTileY,
@@ -201,14 +200,15 @@ class TileManager {
         if (typeof onCompleted === "function") onCompleted();
     }
 
-    iterateTilesWithDelay(level: number, delay: number, onProcessTile: (level: number, x: number, y: number) => void, onCompleted?:() => void) {
-        const result = this.getTileRange(level);
-        const keys = Object.keys(result.tileset);
+    iterateTilesWithDelay(level: number, delay: number, onProcessTile: (level: number, x: number, y: number) => void, onCompleted?:() => void, onProgress?:(tile: number, total: number)=> void) {
+        const datasetResult = this.getTileRange(level);
+        const keys = Object.keys(datasetResult.tileset);
         const keyLength = keys.length;
         let keyIndex = 0;
-        let tileLevel = result.tileset[keys[keyIndex]];
+        let tileLevel = datasetResult.tileset[keys[keyIndex]];
         let x = tileLevel.x1;
         let y = tileLevel.y1;
+        let counter = 0;
         function iterator() {
             const levelZ = Number(keys[keyIndex]);
             onProcessTile(levelZ, x, y);
@@ -219,13 +219,14 @@ class TileManager {
                 if (x > tileLevel.x2) {
                     ++keyIndex;
                     if (keyIndex < keyLength) {
-                        tileLevel = result.tileset[keys[keyIndex]];
+                        tileLevel = datasetResult.tileset[keys[keyIndex]];
                         x = tileLevel.x1;
                         y = tileLevel.y1;
                     }
                 }
             }
             if (keyIndex < keyLength) {
+                if (typeof onProgress === "function") onProgress(counter++, datasetResult.totalTiles)
                 setTimeout(()=>{
                     iterator();
                 }, delay);

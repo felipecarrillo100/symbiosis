@@ -253,8 +253,8 @@ const LayerControlPage: React.FC = () => {
                 <IonIcon slot="start" ios={warningSharp} md={warningOutline}/>
 
                 <IonLabel>
-                    <h2>The map is currently empty</h2>
-                    <p>Use the Connect menu to add layers</p>
+                    <h2>The map is empty</h2>
+                    <p>Add some layers</p>
                 </IonLabel>
                 <IonLabel>
                 </IonLabel>
