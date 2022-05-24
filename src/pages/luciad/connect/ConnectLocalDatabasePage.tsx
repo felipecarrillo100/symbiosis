@@ -22,6 +22,8 @@ import {useHistory} from "react-router";
 import {IAppState} from "../../../reduxboilerplate/store";
 import {DataBaseManager} from "../../../utils/DataBaseManager";
 import {ScreenMessage} from "../../../screen/ScreenMessage";
+import {RasterDataType} from "@luciad/ria/model/tileset/RasterDataType";
+import {RasterSamplingMode} from "@luciad/ria/model/tileset/RasterSamplingMode";
 
 interface StateProps {
     databaseManager: DataBaseManager | null;
@@ -37,6 +39,8 @@ interface DatabaseRasterTableStructure {
     boundsX2: number;
     boundsY1: number;
     boundsY2: number;
+    dataType: string;
+    samplingMode: string;
 }
 const ConnectLocalDatabasePage: React.FC = () => {
     const dispatch = useDispatch();
@@ -47,7 +51,9 @@ const ConnectLocalDatabasePage: React.FC = () => {
         minLevel: 0,
         maxLevel: 0,
         label: "Database Raster Layer",
-        layer: ""
+        layer: "",
+        dataType: "",
+        samplingMode: ""
     });
 
     const [layers, setLayers] = useState([] as DatabaseRasterTableStructure[]);
@@ -96,7 +102,9 @@ const ConnectLocalDatabasePage: React.FC = () => {
                     dataBounds: {
                         reference: "CRS:84",
                         coordinates: [inputs.bounds[0], inputs.bounds[2]-inputs.bounds[0], inputs.bounds[1], inputs.bounds[3]-inputs.bounds[1] ],
-                    }
+                    },
+                    dataType: inputs.dataType as RasterDataType,
+                    samplingMode: inputs.samplingMode as RasterSamplingMode
                 },
                 layer: {
                     label: inputs.label,
@@ -126,7 +134,9 @@ const ConnectLocalDatabasePage: React.FC = () => {
                         setInputs({
                             ...inputs, layer: fLayer.name,
                             minLevel: fLayer.minLevel, maxLevel: fLayer.maxLevel,
-                            bounds: [fLayer.boundsX1, fLayer.boundsY1, fLayer.boundsX2, fLayer.boundsY2]
+                            bounds: [fLayer.boundsX1, fLayer.boundsY1, fLayer.boundsX2, fLayer.boundsY2],
+                            dataType: fLayer.dataType,
+                            samplingMode: fLayer.samplingMode
                         });
                     }
                 })
@@ -184,8 +194,14 @@ const ConnectLocalDatabasePage: React.FC = () => {
                         <IonLabel position="floating">Label</IonLabel>
                         <IonInput value={inputs.label} placeholder="Enter name for the layer" onIonChange={editInput} name="label"/>
                     </IonItem>
-
-
+                    <IonItem>
+                        <IonLabel position="floating">Data type</IonLabel>
+                        <IonInput value={inputs.dataType} readonly />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Sampling mode</IonLabel>
+                        <IonInput value={inputs.samplingMode} readonly />
+                    </IonItem>
                     <IonButton className="ion-margin-top" type="submit" expand="block">
                         Add layer
                     </IonButton>

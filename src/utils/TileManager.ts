@@ -1,5 +1,3 @@
-import {boolean, number} from "@luciad/ria/util/expression/ExpressionFactory";
-
 const WEB_MERCATOR_MIN_BOUNDS = -20037508.34;
 const WEB_MERCATOR_MAX_BOUNDS = 20037508.34;
 const WEB_MERCATOR_MIN_LATITUDE = -85.05112877980666;
@@ -69,10 +67,11 @@ class TileManager {
         return this.bounds;
     }
 
-    public getTileRange(levels: number) {
+    public getTileRange(levelsRequested: number) {
+        const levels =  levelsRequested - 1 ;
         let start = this.maxCount > this.recommendedZoomDetails.z ? this.recommendedZoomDetails.z : this.maxCount;
         if (start>0) --start;
-        const end = this.maxCount > this.recommendedZoomDetails.z+levels ? this.recommendedZoomDetails.z+levels : this.maxCount;
+        const end = this.maxCount > this.recommendedZoomDetails.z + levels ? this.recommendedZoomDetails.z+levels : this.maxCount;
         const tileStructure = {
             tileset : {} as any,
             totalTiles : 0,
@@ -80,7 +79,7 @@ class TileManager {
             maxLevel: end,
             bounds: [this.bounds.p1.lon, this.bounds.p1.lat, this.bounds.p2.lon, this.bounds.p2.lat ]
         }
-        for (let i=start; i<end; ++i) {
+        for (let i=start; i<=end; ++i) {
             const tileRange = TileManager.getTileRangeInfoForLevel(this.meters1, this.meters2, i);
             tileStructure.tileset[i] = tileRange;
             tileStructure.totalTiles += tileRange.tiles;

@@ -38,6 +38,8 @@ interface RaterTableEntry {
     size: number;
     minLevel: number;
     maxLevel: number;
+    dataType: string;
+    samplingMode: string;
     bounds: number[];
 }
 
@@ -51,7 +53,7 @@ const LayerCapturePage: React.FC = () => {
     const [inputs, setInputs] = useState({
         tableName: "",
         label: "",
-        targetZoomLevels: 5
+        targetZoomLevels: 5,
     });
     const domainIndex = useRef(0);
 
@@ -80,6 +82,8 @@ const LayerCapturePage: React.FC = () => {
         size INTEGER,
         minLevel INTEGER,
         maxLevel INTEGER,
+        dataType TEXT,
+        samplingMode TEXT,
         boundsX1 REAL,
         boundsY1 REAL,
         boundsX2 REAL,
@@ -96,7 +100,7 @@ const LayerCapturePage: React.FC = () => {
          PRIMARY KEY (x, y, z)
      );`;
                 db.executeSet([
-                    /* {statement: sqlDropIndexTable, values: []},*/
+                     {statement: sqlDropIndexTable, values: []},
                     {statement: sqlCreateIndexTable, values:[]},
                     {statement: sqlDropTable, values:[]},
                     {statement: sqlCreateTable, values:[]}
@@ -104,8 +108,12 @@ const LayerCapturePage: React.FC = () => {
                     console.log(result);
                     ScreenMessage.info("Table " + tableEntry.name + " was created");
                     const sqlAddEntry = "INSERT OR REPLACE INTO " + tileSetsTableName +
-                        " (name, title, description, size, minLevel, maxLevel, boundsX1, boundsY1, boundsX2, boundsY2) VALUES( ?,?,?,?,?,?, ?,?,?,? )";
-                    const sqlValues = [tableEntry.name, tableEntry.title, tableEntry.description, tableEntry.size, tableEntry.minLevel, tableEntry.maxLevel, ...tableEntry.bounds];
+                        " (name, title, description, size, minLevel, maxLevel, boundsX1, boundsY1, boundsX2, boundsY2, dataType, samplingMode) VALUES( ?,?,?,?,?,?, ?,?,?,?,?,? )";
+                    const sqlValues = [
+                        tableEntry.name, tableEntry.title, tableEntry.description, tableEntry.size,
+                        tableEntry.minLevel, tableEntry.maxLevel, ...tableEntry.bounds,
+                        tableEntry.dataType, tableEntry.samplingMode
+                    ];
                     db.query(sqlAddEntry, sqlValues).then((result)=>{
                         resolve(table);
                     }).catch((err)=>{
@@ -193,8 +201,13 @@ const LayerCapturePage: React.FC = () => {
     let bounds = [] as number[];
     let calculatedZoomLevels = inputs.targetZoomLevels;
     let minMax = [] as number [];
-    if (layer) {
+    let dataType = "";
+    let samplingMode = "";
+    if (layer && layer.model) {
         levelCount = layer.model.levelCount;
+        dataType = layer.model.dataType;
+        samplingMode = layer.model.samplingMode;
+
         tileManager.current = new TileManager({p1: {lon:Number(x1),lat:Number(y1)}, p2: {lon:Number(x2),lat:Number(y2)}}, levelCount);
         const result = tileManager.current.getTileRange(5);
         totalTiles = result.totalTiles;
@@ -202,19 +215,22 @@ const LayerCapturePage: React.FC = () => {
         calculatedZoomLevels = result.maxLevel - result.minLevel;
         minMax = [result.minLevel, result.maxLevel];
 
-        if (layer.restoreCommand.parameters.layer.label) {
-            const tableName = camelize(layer.restoreCommand.parameters.layer.label);
-            if (inputs.tableName !== tableName) setInputs({...inputs, tableName})
+        if (layer.restoreCommand && layer.restoreCommand.parameters) {
+            if (layer.restoreCommand.parameters.layer.label) {
+                const tableName = camelize(layer.restoreCommand.parameters.layer.label);
+                if (inputs.tableName !== tableName) setInputs({...inputs, tableName})
+            }
+            if (layer.restoreCommand.parameters.model.baseURL) {
+                url = layer.restoreCommand.parameters.model.baseURL;
+                subdomains = layer.restoreCommand.parameters.model.subdomains as string[];
+            }
+            if (layer.restoreCommand.parameters.model.url) {
+                const layername = layer.restoreCommand.parameters.model.layer;
+                const format = layer.restoreCommand.parameters.model.format;
+                url = layer.restoreCommand.parameters.model.url+`?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&LAYER=${layername}&STYLE=default&FORMAT=${format}&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={z}&TILEROW={-y}&TILECOL={x}`;
+            }
         }
-        if (layer.restoreCommand.parameters.model.baseURL) {
-            url = layer.restoreCommand.parameters.model.baseURL;
-            subdomains = layer.restoreCommand.parameters.model.subdomains as string[];
-        }
-        if (layer.restoreCommand.parameters.model.url) {
-            const layername = layer.restoreCommand.parameters.model.layer;
-            const format = layer.restoreCommand.parameters.model.format;
-            url = layer.restoreCommand.parameters.model.url+`?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&LAYER=${layername}&STYLE=default&FORMAT=${format}&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={z}&TILEROW={-y}&TILECOL={x}`;
-        }
+
     }
 
     const onSubmit = (event: any) => {
@@ -224,7 +240,13 @@ const LayerCapturePage: React.FC = () => {
         if (tileManager.current) {
             if (databaseManager && databaseManager.getDb()) {
                 const db = databaseManager.getDb();
-                const newTableEntry: RaterTableEntry = {name: inputs.tableName, title: inputs.label, description: "", size: totalTiles, minLevel: minMax[0], maxLevel:minMax[1], bounds};
+                const newTableEntry: RaterTableEntry = {
+                    name: inputs.tableName, title: inputs.label, description: "", size: totalTiles,
+                    minLevel: minMax[0], maxLevel:minMax[1],
+                    bounds,
+                    dataType,
+                    samplingMode
+                };
                 createTable(db, newTableEntry).then((realTableName)=>{
                     if (realTableName) {
                         let timer = 0
@@ -317,6 +339,16 @@ const LayerCapturePage: React.FC = () => {
                     <IonItem>
                         <IonLabel position="floating">Label</IonLabel>
                         <IonInput value={inputs.label} onIonChange={editInput} name="label"/>
+                    </IonItem>
+
+                    <IonItem>
+                        <IonLabel position="floating">Datatype</IonLabel>
+                        <IonInput value={dataType} readonly/>
+                    </IonItem>
+
+                    <IonItem>
+                        <IonLabel position="floating">SamplingMode</IonLabel>
+                        <IonInput value={samplingMode}  readonly/>
                     </IonItem>
                     <IonRow>
                         <IonCol>

@@ -2,6 +2,8 @@ import {LayerTypes} from "../components/luciad/layertypes/LayerTypes";
 import {ApplicationCommands} from "./ApplicationCommands";
 import {Model} from "@luciad/ria/model/Model";
 import {WMTSCapabilitiesTileMatrixLimits} from "@luciad/ria/model/capabilities/WMTSCapabilitiesTileMatrixSet";
+import {RasterDataType} from "@luciad/ria/model/tileset/RasterDataType";
+import {RasterSamplingMode} from "@luciad/ria/model/tileset/RasterSamplingMode";
 
 
 export interface BoundsObject {
@@ -18,12 +20,31 @@ export enum BingMapsImagerySet  {
     GRAY="CanvasGray",
 }
 
-export  interface CreateLayerBaseCommand {
+export interface CreateLayerBaseCommand {
     action: ApplicationCommands;
     parameters: {
         layerType: LayerTypes;
         reusableModel?: Model;
         model?: {
+        };
+        layer?: {
+            visible?: boolean;
+            label?: string;
+            id?: string;
+            selectable?: boolean;
+        },
+        autoZoom?: boolean
+    }
+}
+
+export interface CreateRasterLayerBaseCommand {
+    action: ApplicationCommands;
+    parameters: {
+        layerType: LayerTypes;
+        reusableModel?: Model;
+        model?: {
+            dataType?: RasterDataType;
+            samplingMode?: RasterSamplingMode;
         };
         layer?: {
             visible?: boolean;
@@ -106,7 +127,7 @@ export  interface CreatLayerWFSCommand extends CreateLayerBaseCommand {
     }
 }
 
-export interface CreatLayerWMSCommand extends CreateLayerBaseCommand {
+export interface CreatLayerWMSCommand extends CreateRasterLayerBaseCommand {
     action: ApplicationCommands.CREATELAYER,
     parameters: {
         layerType: LayerTypes.WMSLayer;
@@ -118,8 +139,8 @@ export interface CreatLayerWMSCommand extends CreateLayerBaseCommand {
             layers: string[];
             transparent?: boolean;
             imageFormat?: string;
-            dataType?: string;
-            samplingMode?: string;
+            dataType?: RasterDataType;
+            samplingMode?: RasterSamplingMode;
         };
         layer: {
             visible: boolean;
@@ -131,7 +152,7 @@ export interface CreatLayerWMSCommand extends CreateLayerBaseCommand {
     }
 }
 
-export interface CreatLayerWMTSCommand extends CreateLayerBaseCommand {
+export interface CreatLayerWMTSCommand extends CreateRasterLayerBaseCommand {
     action: ApplicationCommands.CREATELAYER,
     parameters: {
         layerType: LayerTypes.WMTSLayer;
@@ -150,8 +171,8 @@ export interface CreatLayerWMTSCommand extends CreateLayerBaseCommand {
             levelCount: number;
             tileWidth: number;
             tileHeight: number;
-            dataType?: string;
-            samplingMode?: string;
+            dataType?: RasterDataType;
+            samplingMode?: RasterSamplingMode;
         };
         layer: {
             visible: boolean;
@@ -162,7 +183,7 @@ export interface CreatLayerWMTSCommand extends CreateLayerBaseCommand {
     }
 }
 
-export interface CreatLayerLTSCommand extends CreateLayerBaseCommand {
+export interface CreatLayerLTSCommand extends CreateRasterLayerBaseCommand {
     action: ApplicationCommands.CREATELAYER,
     parameters: {
         layerType: LayerTypes.LTSLayer;
@@ -176,8 +197,8 @@ export interface CreatLayerLTSCommand extends CreateLayerBaseCommand {
             tileWidth: number;
             tileHeight: number;
             url: string;
-            dataType?: string;
-            samplingMode?: string;
+            dataType?: RasterDataType;
+            samplingMode?: RasterSamplingMode;
         };
         layer: {
             visible: boolean;
@@ -188,7 +209,7 @@ export interface CreatLayerLTSCommand extends CreateLayerBaseCommand {
     }
 }
 
-export interface CreatLayerTMSCommand  extends CreateLayerBaseCommand  {
+export interface CreatLayerTMSCommand  extends CreateRasterLayerBaseCommand  {
     action: ApplicationCommands.CREATELAYER,
     parameters: {
         layerType: LayerTypes.TMSLayer;
@@ -197,6 +218,8 @@ export interface CreatLayerTMSCommand  extends CreateLayerBaseCommand  {
             baseURL: string;
             subdomains: string[];
             levelCount: number;
+            dataType?: RasterDataType;
+            samplingMode?: RasterSamplingMode;
         };
         layer: {
             visible: boolean;
@@ -207,7 +230,7 @@ export interface CreatLayerTMSCommand  extends CreateLayerBaseCommand  {
     }
 }
 
-export interface CreatDatabaseRasterTilesetCommand  extends CreateLayerBaseCommand  {
+export interface CreatDatabaseRasterTilesetCommand  extends CreateRasterLayerBaseCommand  {
     action: ApplicationCommands.CREATELAYER,
     parameters: {
         layerType: LayerTypes.DatabaseRasterTileset;
@@ -216,6 +239,8 @@ export interface CreatDatabaseRasterTilesetCommand  extends CreateLayerBaseComma
             tableName: string;
             levelCount: number;
             dataBounds: BoundsObject;
+            dataType?: RasterDataType;
+            samplingMode?: RasterSamplingMode;
         };
         layer: {
             visible: boolean;
@@ -245,14 +270,16 @@ export interface CreatLayerOGC3DTilesCommand  extends CreateLayerBaseCommand  {
     }
 }
 
-export interface CreatLayerBingMapsCommand  extends CreateLayerBaseCommand  {
+export interface CreatLayerBingMapsCommand  extends CreateRasterLayerBaseCommand  {
     action: ApplicationCommands.CREATELAYER,
     parameters: {
         layerType: LayerTypes.BingMapsLayer;
         reusableModel?: Model;
         model: {
             token?: string;
-            imagerySet: BingMapsImagerySet
+            imagerySet: BingMapsImagerySet;
+            dataType?: RasterDataType;
+            samplingMode?: RasterSamplingMode;
         };
         layer: {
             visible: boolean;
