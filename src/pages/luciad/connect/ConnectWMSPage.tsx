@@ -80,13 +80,18 @@ const ConnectWMSPage: React.FC = () => {
         const request = inputs.url;
         const options = {}
         WMSCapabilities.fromURL(request, options).then((result) => {
-            const newInputs =  inputs;
+            const newInputs =  {...inputs};
             let projections: string[] = [];
             const flatLayers = flattenWMSLayers(result.layers);
             if (flatLayers.length>0) {
-                newInputs.targetLayers = [ flatLayers[0].name ];
                 newInputs.label = flatLayers[0].title;
-                newInputs.projection = getPreferredProjection(flatLayers[0].supportedReferences);
+                setTimeout(()=>{
+                    const cInputs =  {...inputs};
+                    cInputs.targetLayers = [ flatLayers[0].name ];
+                    cInputs.projection = getPreferredProjection(flatLayers[0].supportedReferences);
+                    setInputs(cInputs);
+                });
+
                 projections = flatLayers[0].supportedReferences;
             }
             const getMap = GetMap(result.operations);

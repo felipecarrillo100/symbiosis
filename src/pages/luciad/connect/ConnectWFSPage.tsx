@@ -66,11 +66,13 @@ const ConnectWFSPage: React.FC = () => {
         const options = {}
         WFSCapabilities.fromURL(request, options).then((result) => {
             if (result.featureTypes.length>0) {
-                const newInputs =  inputs;
-                newInputs.layer = result.featureTypes[0].name;
-                newInputs.label = result.featureTypes[0].title;
-                newInputs.format = getPreferredFormat(result.featureTypes[0].outputFormats);
-                setInputs(newInputs);
+                setTimeout(()=>{
+                    const newInputs = {...inputs} ;
+                    newInputs.layer = result.featureTypes[0].name;
+                    newInputs.label = result.featureTypes[0].title;
+                    newInputs.format = getPreferredFormat(result.featureTypes[0].outputFormats);
+                    setInputs(newInputs);
+                })
                 setFormats(result.featureTypes[0].outputFormats);
             }
             setLayers(result.featureTypes);

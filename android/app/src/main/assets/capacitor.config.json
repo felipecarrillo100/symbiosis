@@ -2,8 +2,5 @@
 	"appId": "com.hexagon.symbiosis",
 	"appName": "symbiosis",
 	"webDir": "build",
-	"bundledWebRuntime": false,
-	"server": {
-		"url": "http://148.53.163.27:8100"
-	}
+	"bundledWebRuntime": false
 }

@@ -73,15 +73,20 @@ const ConnectWMTSPage: React.FC = () => {
         const options = {}
         WMTSCapabilities.fromURL(request, options).then((result) => {
             if (result.layers.length>0) {
-                const newInputs =  inputs;
                 const layer = result.layers[0];
-                newInputs.layer = layer.identifier;
-                newInputs.label = layer.title;
-                newInputs.format = getPreferredFormat(layer.formats);
-                newInputs.tileMatrixSet = getPreferredMatrixSet(layer.tileMatrixSets);
-                setInputs(newInputs);
+                setTimeout(()=>{
+                    const cInputs =  {...inputs};
+                    cInputs.layer = layer.identifier;
+                    cInputs.label = layer.title;
+                    cInputs.format = getPreferredFormat(layer.formats);
+                    cInputs.tileMatrixSet = getPreferredMatrixSet(layer.tileMatrixSets);
+                    setInputs(cInputs);
+                });
                 setTileMatrixSets(layer.tileMatrixSets);
                 setFormats(layer.formats);
+            } else {
+                setTileMatrixSets([]);
+                setFormats([]);
             }
             setLayers(result.layers);
         })
