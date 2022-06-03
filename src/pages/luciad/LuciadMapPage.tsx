@@ -124,6 +124,7 @@ const LuciadMapPage: React.FC = () => {
             }
         }
     }
+
     const restoreMap = (mapStatus: {mapState: any; proj: string; layerCommand: LayerConnectCommandsTypes}) => {
         dispatch(SetLuciadMapProj(mapStatus.proj));
         setTimeout(()=>{

@@ -25,7 +25,6 @@ import {TileManager} from "../../../utils/TileManager";
 import {DataBaseManager} from "../../../utils/DataBaseManager";
 import {DBSQLiteValues, SQLiteDBConnection} from "@capacitor-community/sqlite";
 import {ScreenMessage} from "../../../screen/ScreenMessage";
-import {LayerTreeNode} from "@luciad/ria/view/LayerTreeNode";
 
 interface StateProps {
     map: Map | null;

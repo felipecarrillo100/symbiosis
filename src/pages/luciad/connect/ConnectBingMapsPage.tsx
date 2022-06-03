@@ -24,13 +24,14 @@ import {SetAppCommand} from "../../../reduxboilerplate/command/actions";
 import {useHistory} from "react-router";
 import {BingMapsImagerySet} from "../../../commands/ConnectCommands";
 
+const myToken = "";
 
 const ConnectBingMapsPage: React.FC = () => {
     const dispatch = useDispatch();
     const history = useHistory();
 
     const [inputs, setInputs] = useState({
-        token: "",
+        token: myToken,
         label: "Satellite",
         layer: BingMapsImagerySet.AERIAL as BingMapsImagerySet,
     });
@@ -151,7 +152,7 @@ const ConnectBingMapsPage: React.FC = () => {
                         </IonCol>
                     </IonRow>
                     <IonItem>
-                        <IonLabel position="floating">Select Format</IonLabel>
+                        <IonLabel position="floating">Select Layers</IonLabel>
                         <IonSelect value={inputs.layer} okText="OK" cancelText="Cancel" onIonChange={editInput} name="layer">
                             {renderLayers}
                         </IonSelect>
